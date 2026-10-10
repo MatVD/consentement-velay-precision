@@ -57,18 +57,12 @@ Docker Engine / Docker Desktop et le plugin `docker compose` fonctionnel ; accè
 
    Le mot de passe administrateur sera demandé **sans affichage** dans le terminal (12 caractères minimum).
 
-   Après le premier lancement, créer le fichier de verrouillage des dépendances **sur l'hôte** :
-
-   ```bash
-   docker compose -f compose.yaml -f compose.dev.yaml exec app composer install --no-scripts --no-interaction
-   ```
-
-   Le fichier `composer.lock` sera écrit dans le dossier monté. Conserver ce fichier dans le dépôt Git.
+   Les dépendances sont figées dans `composer.lock` et les recettes Symfony dans `symfony.lock`. Ces deux fichiers sont intégrés à la construction Docker. Ne pas relancer `composer install` pour le premier démarrage : Symfony Flex peut appliquer des recettes modifiant les fichiers de configuration. Toute mise à jour des dépendances doit être vérifiée séparément dans Git.
 
 6. Ouvrir les adresses :
 
-   - Application : http://localhost:8080
-   - Administration : http://localhost:8080/admin
+   - Application : http://localhost:8081
+   - Administration : http://localhost:8081/admin
    - Emails de test (Mailpit) : http://localhost:8025
 
 7. Dans EasyAdmin, ajouter un client, renseigner son email, cliquer sur **Formulaire / preuves**, puis envoyer l'invitation ou générer un lien présentiel.
