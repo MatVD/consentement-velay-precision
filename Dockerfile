@@ -5,7 +5,7 @@ WORKDIR /app
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ARG APP_BUILD_ENV=dev
-COPY composer.json ./
+COPY composer.json composer.lock symfony.lock ./
 RUN if [ "$APP_BUILD_ENV" = "prod" ]; then \
       composer install --no-interaction --no-dev --no-scripts --prefer-dist --no-progress --optimize-autoloader; \
     else \

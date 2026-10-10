@@ -12,3 +12,11 @@
 /composer.lock.old
 /.idea/
 /.DS_Store
+
+# Locally generated files
+/.env.dev
+/.env.local.php
+/.phpunit.result.cache
+/config/reference.php
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/

@@ -1,8 +1,9 @@
 .git
 .env
-.env.local
-.env.*.local
+.env.*
 vendor
 var
 .phpunit.cache
+.phpunit.result.cache
+config/reference.php
 .DS_Store
