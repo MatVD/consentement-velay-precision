@@ -6,6 +6,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'client')]
+#[ORM\Index(name: 'IDX_CLIENT_STATUS', columns: ['status'])]
+#[ORM\Index(name: 'IDX_CLIENT_CODIAL', columns: ['codial_id'])]
 #[ORM\HasLifecycleCallbacks]
 class Client
 {
