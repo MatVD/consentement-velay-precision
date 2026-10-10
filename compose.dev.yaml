@@ -1,0 +1,23 @@
+services:
+  app:
+    ports:
+      - "127.0.0.1:8081:80"
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: '1'
+      SERVER_NAME: ':80'
+      MAILER_DSN: 'smtp://mailpit:1025'
+    volumes:
+      - .:/app
+      - composer_vendor:/app/vendor
+      - evidence_data:/app/var/evidence
+    depends_on:
+      mailpit:
+        condition: service_started
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:8025:8025"
+    restart: unless-stopped
+volumes:
+  composer_vendor:

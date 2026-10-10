@@ -1,0 +1,9 @@
+services:
+  app:
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: '0'

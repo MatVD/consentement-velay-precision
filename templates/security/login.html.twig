@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+{% block title %}Connexion — Velay Précision{% endblock %}
+{% block body %}
+<section class="card login-card">
+  <span class="eyebrow">Accès réservé</span>
+  <h1>Administration</h1>
+  <p class="subtle">Connectez-vous pour gérer les clients et exporter les consentements.</p>
+  {% if error %}<div class="alert alert-error" role="alert">Identifiant ou mot de passe incorrect.</div>{% endif %}
+  <form action="{{ path('app_login') }}" method="post">
+      <label for="username">Adresse email</label>
+      <input type="email" id="username" name="_username" value="{{ last_username }}" autocomplete="username" required autofocus>
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" name="_password" autocomplete="current-password" required>
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+      <button class="button button-primary" type="submit">Se connecter</button>
+  </form>
+</section>
+{% endblock %}

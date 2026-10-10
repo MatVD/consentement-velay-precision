@@ -1,0 +1,46 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+{% block content_title %}Suivi — {{ client.name }}{% endblock %}
+{% block main %}
+  {% for type, messages in app.flashes %}
+    {% for message in messages %}
+      {% if type == 'onsite_link' %}<div class="alert alert-info"><strong>Lien individuel (24 heures) :</strong> <a href="{{ message }}" rel="noreferrer noopener" target="_blank">{{ message }}</a></div>{% else %}<div class="alert alert-{{ type == 'danger' ? 'danger' : 'success' }}">{{ message }}</div>{% endif %}
+    {% endfor %}
+  {% endfor %}
+  <p><strong>Statut :</strong> {{ client.statusLabel }} · <strong>Email :</strong> {{ client.email ?: 'Non renseigné' }}</p>
+  <p><strong>Référence Codial :</strong> {{ client.codialId ?: '—' }}</p>
+  <div class="d-flex gap-2 flex-wrap mb-4">
+    <form method="post" action="{{ path('admin_client_send_email', {id: client.id}) }}">
+      <input type="hidden" name="_token" value="{{ csrf_token('send_' ~ client.id) }}">
+      <button class="btn btn-primary" type="submit" {% if not client.email or client.status in ['yes','no'] %}disabled{% endif %}>Envoyer le formulaire par email</button>
+    </form>
+    <form method="post" action="{{ path('admin_client_onsite', {id: client.id}) }}">
+      <input type="hidden" name="_token" value="{{ csrf_token('onsite_' ~ client.id) }}">
+      <button class="btn btn-outline-primary" type="submit" {% if client.status in ['yes','no'] %}disabled{% endif %}>Générer un lien présentiel</button>
+    </form>
+  </div>
+  <h2>Décisions enregistrées</h2>
+  {% if decisions is empty %}
+    <p>Aucune réponse pour ce client.</p>
+  {% else %}
+    <table class="table table-striped">
+      <thead><tr><th>Date UTC</th><th>Personne déclarée</th><th>Qualité</th><th>Décision</th><th>Justificatif</th></tr></thead>
+      <tbody>
+      {% for decision in decisions %}
+        <tr>
+          <td>{{ decision.decidedAt|date('d/m/Y H:i', 'Europe/Paris') }}</td>
+          <td>{{ decision.firstName }} {{ decision.lastName }}</td>
+          <td>{{ decision.signatoryRole }}</td>
+          <td>{{ decision.choice == 'yes' ? 'Oui' : 'Non' }}</td>
+          <td>{% for proof in files %}{% if proof.decision.id == decision.id %}<a href="{{ path('admin_proof_download', {id: proof.id}) }}">Télécharger le PDF</a>{% endif %}{% endfor %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+  <h2 class="mt-4">Historique récent</h2>
+  {% if events is empty %}<p>Pas d'événements.</p>{% else %}
+    <table class="table table-striped"><thead><tr><th>Date</th><th>Événement</th><th>Origine</th></tr></thead><tbody>
+      {% for event in events %}<tr><td>{{ event.createdAt|date('d/m/Y H:i', 'Europe/Paris') }}</td><td>{{ event.type }}</td><td>{{ event.actorType }}</td></tr>{% endfor %}
+    </tbody></table>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><style>
+body { font-family: DejaVu Sans, sans-serif; color:#1e293b; font-size: 11px; line-height: 1.65; }
+h1 { color:#12355b; font-size: 21px; } h2 { font-size: 13px; color:#12355b; margin-top:18px; }
+.box { background:#f1f5f9; padding:14px; margin:16px 0; } .small { font-size:9px; color:#64748b; }
+strong { color:#0f172a; }
+</style></head><body>
+<p><strong>VELAY PRÉCISION</strong> — Gestion des consentements</p>
+<h1>Récépissé de décision électronique</h1>
+<p><strong>Client :</strong> {{ decision.client.name }}<br>
+<strong>Signataire déclaré :</strong> {{ decision.firstName }} {{ decision.lastName }}<br>
+<strong>Qualité déclarée :</strong> {{ decision.signatoryRole }}<br>
+<strong>Décision :</strong> {{ decision.choice == 'yes' ? 'Oui — accord' : 'Non — refus' }}<br>
+<strong>Date :</strong> {{ decision.decidedAt|date('d/m/Y H:i:s', 'UTC') }} UTC<br>
+<strong>Référence :</strong> {{ decision.request.id }} / {{ decision.id }}</p>
+<h2>Texte présenté au répondant (version {{ decision.textVersion }})</h2>
+<div class="box">{{ decision.textContent }}</div>
+<p><strong>Empreinte SHA-256 des données de décision :</strong><br><span class="small">{{ decision.payloadHash }}</span></p>
+<p><strong>Adresse IP enregistrée :</strong> {{ decision.ipAddress ?: 'Non disponible' }}</p>
+<p class="small">Document généré automatiquement depuis une réponse à un formulaire. L'identité et la qualité du répondant sont déclaratives et ne sont pas vérifiées par un prestataire de confiance. Ce récépissé n'est pas une signature électronique certifiée, avancée ou qualifiée.</p>
+</body></html>

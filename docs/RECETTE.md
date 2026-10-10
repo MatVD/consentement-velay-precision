@@ -1,0 +1,22 @@
+# Recette fonctionnelle avant mise en service
+
+- [ ] `docker compose ... up --build --wait` termine sans erreur.
+- [ ] `php bin/console doctrine:migrations:migrate` termine sans erreur.
+- [ ] `doctrine:schema:validate` et `lint:twig templates/` ne signalent pas d'erreur.
+- [ ] Créer un utilisateur administrateur, connexion et déconnexion réussies.
+- [ ] La page `/admin` refuse l'accès anonyme.
+- [ ] Créer 4 clients, avec les états initiaux « À faire ».
+- [ ] Envoi par email : Mailpit reçoit un message et le client passe à « Mail envoyé ».
+- [ ] Lien présentiel : accès depuis smartphone/tablette, sans compte client.
+- [ ] Soumettre Oui : métadonnées, statut, PDF non certifié et SHA-256 disponibles.
+- [ ] Soumettre Non : mêmes effets avec statut « Non ».
+- [ ] Revérifier le même lien : refus avec HTTP 410.
+- [ ] Liens inexistants ou expirés : pas d'informations sur d'autres clients.
+- [ ] Vérifier la protection CSRF du formulaire et de l'administration.
+- [ ] Un non-administrateur ne télécharge pas les PDF ni le CSV.
+- [ ] Export CSV conforme « Identité;Date;Statut » et ouverture correcte avec Excel.
+- [ ] Essayer un nom client commençant par `=`, `+` ou `@` : protection CSV active.
+- [ ] Vérifier les résultats du SMTP réel et la délivrabilité des emails.
+- [ ] Vérifier le texte juridique et l'information RGPD.
+- [ ] Sauvegarder puis restaurer PostgreSQL et le volume de preuves sur un environnement de test.
+- [ ] Vérifier HTTPS, l'accès via téléphone et l'absence de publication des ports PostgreSQL.

@@ -1,0 +1,17 @@
+parameters:
+    app.evidence_directory: '%kernel.project_dir%/var/evidence'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        bind:
+            $publicBaseUrl: '%env(PUBLIC_BASE_URL)%'
+            $mailFrom: '%env(MAIL_FROM)%'
+            $evidenceDirectory: '%app.evidence_directory%'
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Entity/'
+            - '../src/Dto/'
+            - '../src/Kernel.php'

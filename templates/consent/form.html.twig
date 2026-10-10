@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+{% block title %}Votre choix — Velay Précision{% endblock %}
+{% block body %}
+<section class="card consent-card">
+  <span class="eyebrow">Formulaire client · {{ text_version }}</span>
+  <h1>Votre choix concernant la signature électronique</h1>
+  <p class="subtle">Ce formulaire ne signe aucun devis, contrat ni document futur.</p>
+  <div class="client-box"><span class="mini-label">Entreprise / Client</span><strong>{{ client.name }}</strong></div>
+  <div class="policy-box"><h2>Objet de votre décision</h2><p>{{ policy }}</p></div>
+  {{ form_start(form, {attr: {class: 'consent-form'}}) }}
+    <h2>Vos informations</h2>
+    <div class="field-grid">
+      <div>{{ form_row(form.firstName) }}</div>
+      <div>{{ form_row(form.lastName) }}</div>
+    </div>
+    {{ form_row(form.signatoryRole) }}
+    <div class="choice-area">
+      <h2>Votre décision</h2>
+      {{ form_row(form.choice) }}
+    </div>
+    <p class="note">En validant, vous confirmez votre choix. La date et l'heure de la soumission seront enregistrées automatiquement. Aucun email de confirmation n'est requis.</p>
+    <button class="button button-primary button-wide" type="submit">Confirmer mon choix</button>
+  {{ form_end(form) }}
+  <p class="legal-note">Les informations ci-dessus sont déclaratives. Ce dispositif n'effectue pas de contrôle indépendant de votre identité et n'est pas une signature électronique qualifiée.</p>
+</section>
+{% endblock %}

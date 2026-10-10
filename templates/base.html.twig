@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>{% block title %}Velay Précision — Consentement{% endblock %}</title>
+    <link rel="stylesheet" href="{{ asset('assets/app.css') }}">
+</head>
+<body>
+    <div class="site-shell">
+        <header class="site-header"><a class="wordmark" href="{{ path('home') }}">VELAY <span>PRÉCISION</span></a><span class="header-aside">Consentement électronique</span></header>
+        <main class="main-content">{% block body %}{% endblock %}</main>
+        <footer class="site-footer">Velay Précision · Les données communiquées sont utilisées pour enregistrer votre choix relatif au recours à la signature électronique.</footer>
+    </div>
+</body>
+</html>

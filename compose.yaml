@@ -1,0 +1,44 @@
+name: velay-consentement
+services:
+  app:
+    build:
+      context: .
+      args:
+        APP_BUILD_ENV: ${APP_ENV:-dev}
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-dev}
+      APP_DEBUG: ${APP_DEBUG:-0}
+      APP_SECRET: ${APP_SECRET:?Definir APP_SECRET dans .env}
+      DATABASE_URL: "postgresql://velay:${DB_PASSWORD:?Definir DB_PASSWORD dans .env}@database:5432/velay?serverVersion=18&charset=utf8"
+      MAILER_DSN: ${MAILER_DSN:-null://null}
+      MAIL_FROM: ${MAIL_FROM:-consentements@example.invalid}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+      SERVER_NAME: ${SERVER_NAME:-:80}
+    volumes:
+      - evidence_data:/app/var/evidence
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      database:
+        condition: service_healthy
+  database:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: velay
+      POSTGRES_USER: velay
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Definir DB_PASSWORD dans .env}
+    volumes:
+      - pg_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U velay -d velay"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    # Aucun port PostgreSQL expose a l'hote.
+volumes:
+  pg_data:
+  evidence_data:
+  caddy_data:
+  caddy_config:

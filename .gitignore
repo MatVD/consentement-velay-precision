@@ -1,0 +1,14 @@
+/.env
+/.env.local
+/.env.*.local
+/vendor/
+/var/*
+!/var/evidence/
+/var/evidence/*
+!/var/evidence/.gitkeep
+!/var/.gitkeep
+/.phpunit.cache/
+/phpunit.xml
+/composer.lock.old
+/.idea/
+/.DS_Store
