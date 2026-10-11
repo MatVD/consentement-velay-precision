@@ -27,6 +27,8 @@ final class ClientCrudController extends AbstractCrudController
             ->setDefaultSort(['id' => 'DESC'])
             ->setSearchFields(['name', 'email', 'codialId'])
             ->setPaginatorPageSize(25)
+            ->setPageTitle(Crud::PAGE_NEW, 'Ajouter un client')
+            ->setPageTitle(Crud::PAGE_EDIT, 'Modifier le client')
             ->overrideTemplate('crud/index', 'admin/client_index.html.twig');
     }
 

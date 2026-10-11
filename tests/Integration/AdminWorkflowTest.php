@@ -77,6 +77,11 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertSelectorExists('td[data-column="quickActions"] form[action$="/onsite"]');
         self::assertSelectorExists('td[data-column="quickActions"] a[href$="/assisted"]');
         self::assertSelectorExists('link[rel="stylesheet"][href$="/assets/admin.css"]');
+
+        $newClientPage = $browser->request('GET', '/admin/client/new');
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Ajouter un client', $newClientPage->text());
+        self::assertStringContainsString('Représentant (facultatif)', $newClientPage->text());
     }
 
     public function testClientEditFieldsAndAssistedPrefillUseExplicitRepresentative(): void
