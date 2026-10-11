@@ -12,6 +12,7 @@
         <button type="submit" class="btn btn-sm btn-outline-primary" title="{{ email_aide }}"
                 aria-label="{{ email_aide }}" {% if email_indisponible %}disabled{% endif %}>
             <i class="fa fa-envelope" aria-hidden="true"></i>
+            <span class="client-action-label">Email</span>
         </button>
     </form>
     <form method="post" action="{{ path('admin_client_onsite', {id: client.id}) }}" class="m-0" title="{{ presentiel_aide }}">
@@ -19,18 +20,21 @@
         <button type="submit" class="btn btn-sm btn-outline-secondary" title="{{ presentiel_aide }}"
                 aria-label="{{ presentiel_aide }}" {% if decision_finale %}disabled{% endif %}>
             <i class="fa fa-link" aria-hidden="true"></i>
+            <span class="client-action-label">Présentiel</span>
         </button>
     </form>
     {% if decision_finale %}
         <span class="btn btn-sm btn-outline-secondary disabled" title="{{ assistance_aide }}"
               role="button" aria-disabled="true" aria-label="{{ assistance_aide }}">
             <i class="fa fa-user-pen" aria-hidden="true"></i>
+            <span class="client-action-label">Accompagner</span>
         </span>
     {% else %}
         <a href="{{ path('admin_client_assisted', {id: client.id}) }}"
            class="btn btn-sm btn-outline-secondary" title="{{ assistance_aide }}"
            aria-label="{{ assistance_aide }}">
             <i class="fa fa-user-pen" aria-hidden="true"></i>
+            <span class="client-action-label">Accompagner</span>
         </a>
     {% endif %}
 </div>

@@ -31,13 +31,19 @@
 }
 .ea .table.datagrid td[data-column='quickActions'] .btn { min-width: 36px; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; }
 .ea .table.datagrid td[data-column='quickActions'] [role='group'] { display: flex !important; flex-wrap: wrap; }
+/* Real, selectable button captions: icon-only on desktop, visible on touch widths. */
+.ea .client-action-label { display: none; }
 
 /* Small screens: keep the essential client actions visible and present each row as a card. */
 @media (max-width: 767.98px) {
+    .ea .responsive-header { min-width: 0; gap: .35rem; }
+    .ea .responsive-header #responsive-header-logo { flex: 1 1 auto; min-width: 0; max-width: 100%; margin-inline: 0; }
+    .ea .responsive-header #responsive-header-logo .responsive-logo { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ea .content-header { flex-wrap: wrap; align-items: flex-start; gap: .75rem; }
     .ea .content-header .content-header-title { width: 100%; min-width: 0; overflow-wrap: anywhere; }
     .ea .content-header .page-actions { width: 100%; display: flex; flex-wrap: wrap; gap: .5rem; }
-    .ea .content-header .page-actions .btn { min-height: 44px; }
+    .ea .content-header .page-actions .btn { min-height: 44px; white-space: normal; }
+    .ea .client-action-label { display: inline; }
     .ea .content-body { max-width: 100%; }
     .ea .form-control, .ea .form-select, .ea input[type='search'], .ea input[type='file'] { font-size: 16px; }
     .ea .btn { max-width: 100%; }
@@ -57,9 +63,18 @@
         text-align: center;
     }
 
-    .ea.ea-index .table.datagrid,
-    .ea.ea-index .table.datagrid tbody { display: block; width: 100%; max-width: 100%; }
-    .ea.ea-index .table.datagrid thead {
+    /*
+     * EasyAdmin 5 positions its mobile datagrid labels absolutely and gives
+     * every cell 35% left padding. Reset BOTH when rendering client cards:
+     * otherwise labels overlap values and action buttons (issue reported on
+     * mobile). Scope overrides to the client index, not other EasyAdmin grids.
+     */
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+    }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) thead {
         position: absolute;
         width: 1px;
         height: 1px;
@@ -70,77 +85,115 @@
         white-space: nowrap;
         border: 0;
     }
-    .ea.ea-index .table.datagrid tbody tr {
-        display: flex;
-        flex-direction: column;
-        gap: .65rem;
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
         width: 100%;
         max-width: 100%;
-        margin: 0 0 1rem;
-        padding: 1rem;
+        box-shadow: none;
+    }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody tr:not(.empty-row) {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin: 0;
+        padding: .85rem 1rem;
         border: 1px solid var(--border-color, #e1e7ef);
         border-radius: .75rem;
         background: var(--body-bg, #fff);
     }
-    .ea.ea-index .table.datagrid tbody td {
-        display: flex;
-        align-items: flex-start;
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody tr:not(.empty-row) > td {
+        display: block;
+        position: static;
         width: 100%;
         min-width: 0;
-        padding: 0;
+        min-inline-size: 0;
+        min-height: 0;
+        min-block-size: 0;
+        padding: .65rem 0;
+        padding-inline-start: 0;
+        margin: 0;
         border: 0;
+        border-radius: 0;
+        box-shadow: none;
         white-space: normal;
         overflow-wrap: anywhere;
-        gap: .6rem;
+        text-align: start;
     }
-    .ea.ea-index .table.datagrid tbody td[data-label]::before {
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody tr:not(.empty-row) > td + td {
+        border-top: 1px solid var(--border-color, #e1e7ef);
+    }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td[data-label]::before {
         content: attr(data-label);
         display: block;
-        flex: 0 0 6.2rem;
+        position: static;
+        inset: auto;
+        inline-size: auto;
+        block-size: auto;
+        padding: 0;
+        margin: 0 0 .35rem;
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
+        text-align: start;
         color: var(--text-muted, #66758a);
         font-size: .75rem;
         font-weight: 700;
-        line-height: 1.7;
+        line-height: 1.4;
     }
-    .ea.ea-index .table.datagrid tbody td[data-column='name'] {
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td[data-column='name'] {
         order: -1;
-        font-size: 1.0625rem;
+        font-size: 1.125rem;
         font-weight: 700;
+        padding-top: 0;
     }
-    .ea.ea-index .table.datagrid tbody td[data-column='name']::before { display: none; }
-    .ea.ea-index .table.datagrid tbody td[data-column='quickActions'] {
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td[data-column='name']::before {
+        display: none;
+        content: none;
+    }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td[data-column='quickActions'] {
         order: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: .45rem;
-        padding-top: .7rem;
-        border-top: 1px solid var(--border-color, #e1e7ef);
     }
-    .ea.ea-index .table.datagrid tbody td[data-column='quickActions']::before { flex: none; }
-    .ea.ea-index .table.datagrid tbody td[data-column='quickActions'] [role='group'] { gap: .5rem !important; }
-    .ea.ea-index .table.datagrid tbody td[data-column='quickActions'] .btn {
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td[data-column='quickActions'] [role='group'] {
+        display: flex !important;
+        flex-wrap: wrap;
+        align-items: center;
+        width: 100%;
+        max-width: 100%;
+        gap: .5rem !important;
+    }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td[data-column='quickActions'] .btn {
+        display: inline-flex;
         min-width: 44px;
         min-height: 44px;
-        padding: .5rem .75rem;
-        font-size: 1rem;
+        max-width: 100%;
+        align-items: center;
+        justify-content: center;
+        padding: .5rem .7rem;
+        font-size: .875rem;
         gap: .45rem;
+        white-space: normal;
     }
-    /* Titles alone do not work on touch screens: show action captions. */
-    .ea.ea-index .table.datagrid tbody td[data-column='quickActions'] form[action$='/email'] .btn::after { content: 'Email'; }
-    .ea.ea-index .table.datagrid tbody td[data-column='quickActions'] form[action$='/onsite'] .btn::after { content: 'Présentiel'; }
-    .ea.ea-index .table.datagrid tbody td[data-column='quickActions'] a[href$='/assisted']::after,
-    .ea.ea-index .table.datagrid tbody td[data-column='quickActions'] .btn.disabled::after { content: 'Accompagner'; }
-    .ea.ea-index .table.datagrid tbody td[data-column='quickActions'] .btn::after { font-size: .8125rem; }
-    .ea.ea-index .table.datagrid tbody td.actions {
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td.actions {
         order: 2;
         display: flex;
         justify-content: flex-end;
-        border-top: 1px solid var(--border-color, #e1e7ef);
-        padding-top: .25rem;
+        align-items: center;
+        min-height: 0;
+        padding-bottom: 0;
     }
-    .ea.ea-index .table.datagrid tbody td.actions .dropdown-toggle { min-height: 44px; min-width: 44px; }
-    .ea.ea-index .table.datagrid tbody td.actions::before { display: none; }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td.actions .dropdown-toggle {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td.actions::before {
+        display: none;
+        content: none;
+    }
 
     .ea .responsive-data-table { overflow: visible; }
     .ea .responsive-data-table table, .ea .responsive-data-table tbody { display: block; min-width: 0; width: 100%; }
@@ -162,14 +215,34 @@
         border: 1px solid var(--border-color, #e1e7ef);
         border-radius: .75rem;
     }
-    .ea .responsive-data-table tbody td { display: flex; gap: .6rem; align-items: flex-start; border: 0; padding: .35rem 0; }
+    /* The follow-up tables use the same vertical label/value rhythm as Clients. */
+    .ea .responsive-data-table tbody td {
+        display: block;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        border: 0;
+        padding: .55rem 0;
+    }
+    .ea .responsive-data-table tbody td + td {
+        border-top: 1px solid var(--border-color, #e1e7ef);
+    }
     .ea .responsive-data-table tbody td::before {
         content: attr(data-label);
         display: block;
-        flex: 0 0 6rem;
+        position: static;
+        width: auto;
+        margin-bottom: .3rem;
         color: var(--text-muted, #66758a);
         font-size: .75rem;
         font-weight: 700;
+        line-height: 1.4;
+        white-space: normal;
     }
-    .ea .responsive-data-table tbody td a { overflow-wrap: anywhere; }
+    .ea .responsive-data-table tbody td a { min-width: 0; overflow-wrap: anywhere; }
+}
+
+@media (max-width: 400px) {
+    .ea .responsive-header #responsive-header-logo .responsive-logo { font-size: .875rem; }
+    .ea .content-header .page-actions { gap: .35rem; }
+    .ea .content-body .card-body { padding: .875rem; }
 }
