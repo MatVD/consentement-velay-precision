@@ -41,7 +41,7 @@
 
 **Critères de fin de phase :** imports et exports vérifiés sur des fixtures ; pas de confusion entre client et représentant ; UI française et recette responsive validée.
 
-**État :** à planifier après validation de la phase 1.
+**État :** implémentée et testée sur `feat/roadmap-phase-2-data-ux` (11 octobre 2026). En attente d'avis utilisateur ; recette visuelle sur appareils réels encore à faire.
 
 ## Phase 3 — Sécurité, conformité et gouvernance
 
@@ -83,8 +83,8 @@
 
 | Phase | Branche | État | Tests | Validation utilisateur |
 | --- | --- | --- | --- | --- |
-| 1 | `feat/roadmap-phase-1-stabilisation` | Implémentée et testée | 23 tests / 90 assertions, contrôles Symfony et Doctrine OK | En attente |
-| 2 | À définir | En attente | — | — |
+| 1 | `feat/roadmap-phase-1-stabilisation` | Implémentée et testée | 23 tests / 90 assertions, contrôles Symfony et Doctrine OK | Poursuite phase 2 autorisée |
+| 2 | `feat/roadmap-phase-2-data-ux` | Implémentée et testée | 33 tests / 172 assertions, Twig/YAML/Doctrine/Compose OK | En attente |
 | 3 | À définir | En attente | — | — |
 | 4 | À définir | En attente | — | — |
 | 5 | À définir | En attente | — | — |
@@ -130,4 +130,37 @@ docker compose -f compose.yaml -f compose.dev.yaml exec -T app php bin/console d
 - Utilisation SMTP réel, HTTPS public et sauvegarde/restauration (phases 3 et 4).
 - La correction du préremplissage d'identité commerciale et les améliorations d'import CSV appartiennent à la phase 2.
 
-**Décision requise :** attendre la revue et l'accord utilisateur avant de passer à la phase 2 ou de fusionner dans `main`.
+**Décision reçue :** l'utilisateur a autorisé la poursuite avec la phase 2. Les travaux de la phase 1 restent hors de `main` et sont inclus dans la branche phase 2.
+
+## Résultats et reprise — phase 2 (11 octobre 2026)
+
+**Commits de la phase :**
+- `b0c5dad` — fiche client enrichie de trois champs de représentant facultatifs et migration Doctrine additive ;
+- `be95442` — import CSV robuste, bilan des erreurs, export en streaming et tests PostgreSQL ;
+- `fcfebfe` — fiabilisation du rapport d'import en interface, injection du service et gestion mémoire ciblée ;
+- `ced8a68` — EasyAdmin en français, groupes de formulaire, historique traduit et tests fonctionnels.
+- `27a1cc4` — titres des formulaires clients et assertions complémentaires sur le parcours de création.
+
+**Fonctions livrées :**
+- Séparation raison sociale / représentant, sans déduire l'identité de la personne du nom du commerce.
+- Informations du représentant facultatives, éditables dans EasyAdmin et proposées dans le formulaire assisté (aucune décision présélectionnée).
+- Import CSV UTF-8 (`;`), 1 Mo / 3 000 lignes : validation complète avant insertion, détection de doublons insensible à la casse, insertions par lots de 100 sous transaction PostgreSQL et bilan des erreurs (40 détails maximum). Les clients existants ne sont pas modifiés.
+- Export CSV toujours sur les 3 colonnes prévues, en parcours progressif et avec neutralisation des formules Excel.
+- Administration en français, champs regroupés et historique de suivi traduit.
+
+**Contrôles exécutés et réussis :**
+- PHPUnit complet avec PostgreSQL isolé : **33 tests, 172 assertions, aucun échec**.
+- Twig : 13 templates valides ; YAML : 11 fichiers valides ; conteneur Symfony valide.
+- Doctrine : mapping et schéma applicatif synchronisés ; 3 migrations appliquées, aucune nouvelle migration en attente.
+- Docker Compose : validation de la configuration (`config --quiet`) réussie ; Git : `diff --check` sans erreur.
+- Tests HTTP : index en français, filtre de statuts, actions rapides, saisie assistée préremplie, formulaire CSV et bilan de validation ; tests d'intégration avec données fictives sur `velay_phase1_test` exclusivement.
+- Inspection Brave desktop : `/admin/client` affiche « Filtres », « Ajouter un client », et une balise `<html lang="fr">` ; l'écran `/admin/import` charge correctement.
+
+**Migration locale appliquée :** `DoctrineMigrations\\Version20261011191500`. Avant la migration, une **sauvegarde temporaire de la base de développement** a été créée dans le conteneur PostgreSQL sous `/tmp/velay-consentement-pre-phase2.dump`. Ce fichier interne n'est pas une stratégie de sauvegarde externalisée. La migration ajoute trois colonnes `VARCHAR(120) NULL` à `client`, sans mise à jour des décisions existantes.
+
+**Points restant hors périmètre ou à valider manuellement :**
+- Vérification visuelle réelle à 320, 375, 390, 768, 1024 et 1440 px, et changement d'orientation tablette/mobile ; les tests HTML/CSS ne remplacent pas cette recette.
+- Contrôle humain des imports/exports réellement téléchargés et ouverture sur Excel.
+- SMTP réel, hébergement HTTPS, RGPD et sauvegarde/restauration externalisée (phases 3 et 4).
+
+**Règle de reprise :** ne démarrer la phase 3, ne fusionner dans `main` et ne déployer publiquement qu'après instruction explicite. La branche phase 2 contient la phase 1 en historique, car celle-ci n'avait pas encore été fusionnée à `main`.

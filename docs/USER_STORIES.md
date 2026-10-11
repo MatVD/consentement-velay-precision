@@ -39,8 +39,8 @@ Un commercial enregistre la « Boulangerie Martin », qui vient d'acheter une ca
 ### Parcours utilisateur
 
 1. Se connecter à l'espace d'administration.
-2. Ouvrir **Clients**, puis **Add Client**.
-3. Renseigner l'identité du client ; ajouter son email et, si disponible, sa référence Codial.
+2. Ouvrir **Clients**, puis **Ajouter un client**.
+3. Renseigner l'entreprise / client et l'email d'invitation ; ajouter éventuellement sa référence Codial et les informations **distinctes** du représentant (prénom, nom, fonction).
 4. Enregistrer la fiche.
 5. Retrouver le client dans la liste avec le statut **À faire**.
 
@@ -50,6 +50,7 @@ Un commercial enregistre la « Boulangerie Martin », qui vient d'acheter une ca
 - **Étant donné** une nouvelle fiche, **quand** elle vient d'être enregistrée, **alors** son statut initial est **À faire**.
 - **Étant donné** un formulaire de création incomplet ou invalide, **quand** il est soumis, **alors** la saisie doit être corrigée avant enregistrement.
 - La création du client **n'envoie aucun email automatiquement**.
+- Le nom commercial ne doit **jamais** être automatiquement découpé en prénom et nom du représentant ; les coordonnées du contact sont facultatives et restent distinctes.
 
 ---
 
@@ -97,8 +98,8 @@ Pendant l'installation d'une balance chez un boucher, le technicien propose le f
 ### Parcours utilisateur
 
 1. Ouvrir la liste **Clients** et retrouver le client.
-2. Sur sa ligne, survoler l'icône **lien**, puis cliquer pour **générer un lien présentiel**.
-3. Copier ou ouvrir le lien individuel affiché en haut de la liste sur un appareil pouvant accéder à l'application.
+2. Pour donner un formulaire individuel au client, cliquer sur l'icône **lien** ; le lien présentiel peut être copié/ouvert sur l'appareil du commerçant.
+3. Pour remplir **avec lui** depuis l'espace technicien, cliquer sur l'icône **accompagnement** : les coordonnées du représentant enregistrées sont proposées, sans préremplir le choix Oui/Non.
 4. Laisser le représentant du client prendre connaissance du texte et renseigner ses informations.
 5. Le représentant choisit **Oui, j'accepte** ou **Non, je refuse**, puis confirme.
 6. Le collaborateur vérifie le statut et le justificatif dans la fiche.
@@ -108,6 +109,7 @@ Pendant l'installation d'une balance chez un boucher, le technicien propose le f
 - **Étant donné** un client sans décision définitive, **quand** un lien présentiel est généré, **alors** il est valable **24 heures**.
 - L'action présentielle est directement accessible dans la liste, avec une infobulle ; le lien généré est affiché dans cette même liste.
 - La génération du lien, à elle seule, ne change pas le statut **À faire** en **Mail envoyé**.
+- Le formulaire assisté ne déduit **jamais** un prénom/nom de la raison sociale. Les coordonnées du représentant sont éditables et la case de confirmation de présence est obligatoire pour enregistrer la décision.
 - **Étant donné** un refus, **quand** le formulaire est validé, **alors** le statut devient **Non** et un justificatif est généré.
 - **Étant donné** une décision déjà enregistrée, **quand** le lien est réutilisé ou une nouvelle invitation demandée, **alors** le parcours normal ne permet pas de remplacer la décision.
 
@@ -154,18 +156,18 @@ Velay Précision dispose d'une liste de 250 commerces et souhaite les ajouter à
 ### Parcours utilisateur
 
 1. Préparer un fichier **CSV UTF-8**, séparé par des points-virgules.
-2. Inclure une colonne **Identité** obligatoire ; **Email** et **Référence Codial** sont facultatives.
-3. Dans l'administration, ouvrir **Importer des clients** et sélectionner le fichier.
-4. Lancer l'import, puis vérifier le message récapitulatif.
+2. Inclure une colonne **Identité** ou **Entreprise** obligatoire ; **Email**, **Référence Codial**, **Prénom représentant**, **Nom représentant** et **Fonction représentant** sont facultatives.
+3. Dans l'administration, ouvrir **Importer des clients** et sélectionner le fichier (1 Mo / 3 000 lignes maximum).
+4. Lancer l'import, puis vérifier le bilan : **ajoutés**, **doublons**, **rejetés** et erreurs par ligne.
 5. Contrôler les nouvelles fiches dans **Clients**.
 
 ### Exemple de CSV
 
 ~~~csv
-Identité;Email;Référence Codial
-Boulangerie Martin;contact@example.fr;COD123
-Boucherie du Centre;boucherie@example.fr;COD124
-Restaurant des Halles;restaurant@example.fr;COD125
+Identité;Email;Référence Codial;Prénom représentant;Nom représentant;Fonction représentant
+Boulangerie Martin;contact@example.fr;COD123;Anne;Martin;Gérante
+Boucherie du Centre;boucherie@example.fr;COD124;;;
+Restaurant des Halles;restaurant@example.fr;COD125;;;
 ~~~
 
 ### Critères d'acceptation
@@ -173,8 +175,10 @@ Restaurant des Halles;restaurant@example.fr;COD125
 - **Étant donné** un CSV au bon format, **quand** il est importé, **alors** les clients valides et non déjà présents sont ajoutés au statut **À faire**.
 - **Étant donné** un client existant détecté comme doublon, **quand** le fichier est importé, **alors** la fiche existante et son statut sont conservés.
 - **Étant donné** un fichier invalide, trop volumineux ou dépourvu de colonne d'identité, **quand** l'import est tenté, **alors** l'utilisateur reçoit un message d'erreur.
-- La V1 prévoit une limite de **1 Mo par fichier** et de **3 000 nouveaux clients par import**.
+- La V1 prévoit une limite de **1 Mo par fichier** et de **3 000 lignes de données CSV par import** ; si la limite de lignes est dépassée, aucun client du fichier n'est inséré.
+- Les doublons sont reconnus sans distinction de casse sur la référence Codial ou sur le couple identité/email. Les lignes invalides sont ignorées et expliquées dans le bilan (jusqu'à 40 détails).
 - La référence Codial est stockée comme information facultative : **aucune synchronisation automatique avec Codial** n'est active.
+- L'export CSV génère progressivement les lignes en UTF-8 avec BOM, protège le texte contre les formules Excel et conserve uniquement les colonnes **Identité ; Date ; Statut**.
 
 ---
 
@@ -207,11 +211,14 @@ Restaurant des Halles;restaurant@example.fr;COD125
 - Historique des décisions et impossibilité de réutiliser le lien déjà consommé.
 - Accès protégé à l'administration.
 
-**Contrôles complémentaires encore à finaliser :**
+**Contrôles effectués automatiquement lors de la phase 2 :**
 
-- Import d'un véritable fichier CSV de recette (fichier valide, doublons et erreurs).
-- Vérification du contenu exact d'un export CSV téléchargé.
-- Vérification du téléchargement et de la lecture d'un PDF depuis le navigateur.
+- Import CSV avec doublons, lignes invalides, contacts, limites et lots de plus de 100 entrées, sur base PostgreSQL isolée.
+- Export CSV : colonnes, BOM UTF-8, horodatage et protection contre les formules Excel.
+- Formulaires administrateur français, champs représentant, filtre des statuts, actions rapides et formulaire assisté.
+- Téléchargement de PDF : tests HTTP (authentification, absence, empreinte invalide) effectués durant la phase 1.
+
+**Contrôles encore à réaliser :** vérification visuelle réelle à différentes largeurs, essai d'un import/export téléchargé par une personne depuis un navigateur et recette SMTP/HTTPS de production.
 
 Les clients fictifs et leurs justificatifs créés pour les scénarios Oui/Non ont été supprimés à la fin des tests.
 

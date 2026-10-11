@@ -8,8 +8,9 @@ Application autonome de recueil d'un accord **déclaratif** sur le recours à la
 - Identité et qualité **déclarées** du répondant, choix **Oui / Non**, date serveur et version exacte du texte.
 - Administration protégée par identifiant/mot de passe avec **EasyAdmin 5**.
 - Clients, consultation des preuves, statuts **À faire / Mail envoyé / Oui / Non**.
+- **Représentant facultatif** renseigné séparément de la raison sociale ; la saisie assistée ne déduit jamais un nom de personne de celui de l'entreprise.
 - Envoi de l'**invitation initiale** par email depuis EasyAdmin (SMTP requis), ou génération d'un lien pour une visite technicien.
-- Export **CSV UTF-8** en trois colonnes « Identité », « Date », « Statut » ; import CSV clients.
+- Export **CSV UTF-8** progressif en trois colonnes « Identité », « Date », « Statut » ; import CSV validé en lots avec bilan des rejets et doublons.
 - Récépissé PDF **non certifié** archivé dans un volume Docker privé, empreinte SHA-256 et journal d'événements.
 - Connecteur Codial : **non implémenté**, champ facultatif `codial_id` réservé.
 
@@ -67,23 +68,23 @@ Docker Engine / Docker Desktop et le plugin `docker compose` fonctionnel ; accè
    - Administration : http://localhost:8081/admin
    - Emails de test (Mailpit) : http://localhost:8025
 
-7. Dans EasyAdmin, ajouter un client, renseigner son email, puis utiliser les icônes **enveloppe** (envoi email) ou **lien** (présentiel) directement dans la liste **Clients**. Survoler une icône pour afficher son infobulle. Le lien présentiel valable 24 heures s'affiche en haut de la liste. Le menu **Suivi / preuves** permet de consulter les décisions et les justificatifs.
+7. Dans EasyAdmin (interface en français), ajouter un client : renseigner l'**entreprise / client**, l'email d'invitation et, si disponibles, le prénom, le nom et la fonction de son représentant. Utiliser les icônes **enveloppe** (envoi email), **lien** (présentiel) ou **accompagnement** (formulaire rempli avec le client) dans la liste **Clients**. Les info-bulles explicitent les actions. Le lien présentiel valable 24 heures s'affiche en haut de la liste. Le menu **Suivi / preuves** permet de consulter les décisions et les justificatifs.
 
 ### Import CSV
 
-Page **Importer des clients** dans EasyAdmin. Exemples d'en-têtes acceptées (séparateur `;`, UTF-8) :
+Page **Importer des clients** dans EasyAdmin. Fichier `.csv` **UTF-8**, séparateur `;`, taille maximale **1 Mo**, limite de **3 000 lignes de données**. Seule la colonne `Identité` ou `Entreprise` est obligatoire ; les autres colonnes sont facultatives :
 
 ```csv
-Identité;Email;Référence Codial
-Boulangerie Martin;contact@example.fr;COD123
-Restaurant du Centre;restaurant@example.fr;COD124
+Identité;Email;Référence Codial;Prénom représentant;Nom représentant;Fonction représentant
+Boulangerie Martin;contact@example.fr;COD123;Anne;Martin;Gérante
+Restaurant du Centre;restaurant@example.fr;COD124;;;
 ```
 
-L'import **n'importe pas les statuts** : il ajoute seulement des clients absents (dans la limite de 3000 nouvelles lignes par opération).
+Le traitement importe les clients non présents par lots de 100, sans importer les statuts et sans modifier les fiches existantes. Les doublons sont recherchés sans distinction de casse, selon la référence Codial ou le couple (nom, email). Un bilan affiche le nombre de clients **ajoutés**, de **doublons ignorés**, de **lignes rejetées** et jusqu'à 40 erreurs détaillées. Un CSV comportant plus de 3 000 lignes de données est refusé dans son ensemble.
 
 ### Export CSV
 
-Menu **Exporter le CSV** : colonnes `Identité;Date;Statut`. La date correspond à la dernière transition métier, affichée en heure française. La sortie utilise un BOM UTF-8 pour Excel et protège les cellules de texte contre l'exécution de formules.
+Menu **Exporter le CSV** : colonnes `Identité;Date;Statut`. La date correspond à la dernière transition métier, affichée en heure française. Le fichier est généré progressivement, avec un BOM UTF-8 pour Excel et une protection des cellules de texte contre l'exécution de formules.
 
 ## Fonctionnement des statuts
 
@@ -161,9 +162,21 @@ docker compose -f compose.yaml -f compose.dev.yaml exec app php bin/console lint
 docker compose -f compose.yaml -f compose.dev.yaml exec app php vendor/bin/simple-phpunit
 ```
 
-## Limites de l'archive initiale
+## État du dépôt et tests d'intégration
 
-Le code source, Docker Compose, une migration, un contrôleur d'administration, l'export et le parcours client sont inclus. **Les dépendances `vendor/` et `composer.lock` ne sont pas inclus**, faute d'accès réseau Composer dans l'environnement de génération. Le premier `docker compose build` les téléchargera ; il faudra **committer le `composer.lock` généré** après la première installation pour rendre les builds reproductibles. Les tests d'intégration Docker/SMTP/PostgreSQL et le démarrage réel sont à exécuter sur votre poste avant la production.
+`composer.lock` et `symfony.lock` sont versionnés. Le dossier `vendor/` est volontairement exclu de Git ; les dépendances sont installées dans l'image Docker. Les tests d'intégration sont disponibles, mais ils ne doivent **jamais** être dirigés vers la base de développement : ils utilisent exclusivement la base isolée `velay_phase1_test`, créée une seule fois avec :
+
+```bash
+docker compose -f compose.yaml -f compose.dev.yaml exec -T database createdb -U velay velay_phase1_test
+```
+
+Si cette base existe déjà, ne pas relancer la commande. Lancer ensuite la suite complète :
+
+```bash
+docker compose -f compose.yaml -f compose.dev.yaml exec -T -e VELAY_RUN_DB_TESTS=1 -e APP_DEBUG=0 app php vendor/bin/simple-phpunit
+```
+
+**Attention :** ces tests effacent/recréent les tables de **cette base isolée** ; ne jamais exécuter la suite en parallèle avec plusieurs agents partageant `velay_phase1_test`. Ils ne modifient ni les clients, ni les décisions, ni les justificatifs réels de la base `velay`. Un contrôle visuel sur appareils mobiles et une recette SMTP/HTTPS réels restent nécessaires avant production.
 
 ## Références officielles
 
