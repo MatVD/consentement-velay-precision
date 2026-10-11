@@ -29,7 +29,7 @@
 - Les vérifications automatisées passent ; les contrôles navigateur non réalisables sont listés.
 - Chaque changement est commité séparément avec un message explicite.
 
-**État :** en cours sur `feat/roadmap-phase-1-stabilisation`.
+**État :** implémentée et testée sur `feat/roadmap-phase-1-stabilisation` (11 octobre 2026). En attente de validation utilisateur ; contrôle visuel sur de vrais appareils restant à effectuer.
 
 ## Phase 2 — Qualité des données et ergonomie
 
@@ -83,10 +83,51 @@
 
 | Phase | Branche | État | Tests | Validation utilisateur |
 | --- | --- | --- | --- | --- |
-| 1 | `feat/roadmap-phase-1-stabilisation` | En cours | À compléter | En attente |
+| 1 | `feat/roadmap-phase-1-stabilisation` | Implémentée et testée | 23 tests / 90 assertions, contrôles Symfony et Doctrine OK | En attente |
 | 2 | À définir | En attente | — | — |
 | 3 | À définir | En attente | — | — |
 | 4 | À définir | En attente | — | — |
 | 5 | À définir | En attente | — | — |
 
-Les résultats effectifs sont renseignés seulement après exécution des contrôles.  
+## Résultats et reprise — phase 1 (11 octobre 2026)
+
+**Commits de la phase :**
+- `beae928` — création de la feuille de route ;
+- `2dbd37b` — corrections CSS mobile et test de garde ;
+- `ce2baae` — cycle des invitations sécurisé par des transactions et verrouillage cohérent ;
+- `fe9f9c9` — tests des décisions, du SMTP simulé, de PostgreSQL et des justificatifs.
+
+**Contrôles exécutés et réussis :**
+- PHPUnit complet avec tests PostgreSQL activés : **23 tests, 90 assertions, 0 échec**.
+- Twig : 13 templates syntaxiquement valides.
+- YAML : 11 fichiers de configuration valides.
+- Conteneur de services Symfony : valide.
+- Doctrine : mapping valide, schéma de la base applicative en phase avec les entités.
+- Doctrine Migrations : 2 migrations appliquées, aucune en attente.
+- Navigateur Brave : la page `/admin/client` rend `<body class="ea ea-index ...">`, inclut `assets/admin.css` et fournit la colonne `quickActions` utilisée par les sélecteurs corrigés.
+- Test HTTP du téléchargement : redirection vers le login sans authentification, HTTP 404 pour ID inconnu ou fichier altéré, téléchargement valide avec en-têtes privés.
+- Test avec deux EntityManager PostgreSQL : une invitation créée depuis un statut obsolète est refusée, et une décision enregistrée pendant le transport SMTP reste définitive.
+- Parcours de consentement public sur la base de test : jeton à usage unique, décision enregistrée, récépissé PDF généré.
+
+**Exécuter les tests :**
+
+```bash
+# Prérequis ponctuel : créer une base dédiée, et jamais la base `velay`.
+docker compose -f compose.yaml -f compose.dev.yaml exec -T database createdb -U velay velay_phase1_test
+
+# Si cette base existe déjà, ne pas relancer createdb.
+docker compose -f compose.yaml -f compose.dev.yaml exec -T -e VELAY_RUN_DB_TESTS=1 -e APP_DEBUG=0 app php vendor/bin/simple-phpunit
+docker compose -f compose.yaml -f compose.dev.yaml exec -T app php bin/console lint:twig templates
+docker compose -f compose.yaml -f compose.dev.yaml exec -T app php bin/console lint:yaml config
+docker compose -f compose.yaml -f compose.dev.yaml exec -T app php bin/console lint:container
+docker compose -f compose.yaml -f compose.dev.yaml exec -T app php bin/console doctrine:schema:validate
+```
+
+**Important :** les tests d'intégration sont désactivés par défaut. Avec `VELAY_RUN_DB_TESTS=1`, ils utilisent **exclusivement `velay_phase1_test`** et remettent les tables de cette base de test à zéro entre scénarios. Ne pas exécuter les tests d'intégration simultanément dans plusieurs agents partageant cette base. Les fichiers PDF de test sont générés dans des répertoires temporaires et supprimés après exécution ; aucun email réel n'est envoyé.
+
+**Points non validés automatiquement :**
+- Inspection visuelle sur de vrais écrans mobiles et tablettes aux largeurs 320, 375, 390, 768, 1024 et 1440 px, avec rotation.
+- Utilisation SMTP réel, HTTPS public et sauvegarde/restauration (phases 3 et 4).
+- La correction du préremplissage d'identité commerciale et les améliorations d'import CSV appartiennent à la phase 2.
+
+**Décision requise :** attendre la revue et l'accord utilisateur avant de passer à la phase 2 ou de fusionner dans `main`.
