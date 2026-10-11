@@ -12,7 +12,9 @@ RUN if [ "$APP_BUILD_ENV" = "prod" ]; then \
       composer install --no-interaction --no-scripts --prefer-dist --no-progress; \
     fi
 COPY . .
-RUN composer dump-autoload --no-scripts --optimize
+RUN composer dump-autoload --no-scripts --optimize \
+    && mkdir -p public/bundles/easyadmin \
+    && cp -R vendor/easycorp/easyadmin-bundle/public/. public/bundles/easyadmin/
 COPY docker/frankenphp/Caddyfile /etc/frankenphp/Caddyfile
 RUN mkdir -p /app/var/cache /app/var/log /app/var/evidence \
     && chown -R www-data:www-data /app/var

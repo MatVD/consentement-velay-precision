@@ -11,6 +11,9 @@ services:
       - .:/app
       - composer_vendor:/app/vendor
       - evidence_data:/app/var/evidence
+    # Le bind mount masque les assets copies dans l'image Docker.
+    post_start:
+      - command: php bin/console assets:install public
     depends_on:
       mailpit:
         condition: service_started

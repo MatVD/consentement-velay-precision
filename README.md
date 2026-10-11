@@ -48,6 +48,8 @@ Docker Engine / Docker Desktop et le plugin `docker compose` fonctionnel ; accè
    docker compose -f compose.yaml -f compose.dev.yaml up -d --build --wait
    ```
 
+   Les fichiers CSS et JavaScript d'EasyAdmin sont installés automatiquement au démarrage. En cas de problème d'affichage, relancer `docker compose -f compose.yaml -f compose.dev.yaml exec app php bin/console assets:install public` puis actualiser la page.
+
 5. Appliquer les migrations, puis créer l'administrateur :
 
    ```bash
