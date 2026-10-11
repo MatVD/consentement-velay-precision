@@ -2,6 +2,7 @@
 namespace App\Tests\Integration;
 
 use App\Entity\Client;
+use App\Entity\ConsentRequest;
 use App\Entity\User;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Tools\DsnParser;
@@ -185,6 +186,78 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('Lien créé', $crawler->text());
         self::assertStringContainsString('Collaborateur', $crawler->text());
+    }
+
+    public function testResponsiveAssetsAndViewportAcrossAdminScreens(): void
+    {
+        $browser = $this->browserWithAdmin();
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        $client = (new Client())->setName('Commerce avec un nom assez long pour le mobile')
+            ->setEmail('contact@example.fr');
+        $em->persist($client);
+        $em->flush();
+
+        foreach ([
+            '/admin/client',
+            '/admin/client/new',
+            '/admin/client/'.$client->getId().'/edit',
+            '/admin/clients/'.$client->getId().'/assisted',
+            '/admin/clients/'.$client->getId().'/actions',
+            '/admin/import',
+        ] as $route) {
+            $crawler = $browser->request('GET', $route);
+
+            self::assertResponseIsSuccessful($route);
+            self::assertCount(
+                1,
+                $crawler->filter('meta[name="viewport"][content="width=device-width, initial-scale=1"]'),
+                'Viewport absent : '.$route
+            );
+            self::assertCount(
+                1,
+                $crawler->filter('link[rel="stylesheet"][href$="/assets/admin.css"]'),
+                'CSS responsive absent : '.$route
+            );
+            self::assertSame('fr', $crawler->filter('html')->attr('lang'), $route);
+        }
+
+        $crawler = $browser->request('GET', '/admin/client');
+        self::assertResponseIsSuccessful();
+        self::assertCount(
+            3,
+            $crawler->filter('td[data-column="quickActions"] .client-action-label'),
+            'Les actions clients doivent porter trois vrais libellés, visibles sur mobile.'
+        );
+    }
+
+    public function testPublicConsentFormHasFluidLayoutAndChoiceControls(): void
+    {
+        $browser = $this->browserWithAdmin();
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        $client = (new Client())->setName('Boulangerie de démonstration');
+        $em->persist($client);
+        $em->flush();
+
+        $token = bin2hex(random_bytes(32));
+        $invitation = new ConsentRequest(
+            $client,
+            hash('sha256', $token),
+            'onsite',
+            new \DateTimeImmutable('+1 day', new \DateTimeZone('UTC'))
+        );
+        $em->persist($invitation);
+        $em->flush();
+
+        $crawler = $browser->request('GET', '/c/'.$token);
+        self::assertResponseIsSuccessful();
+        self::assertCount(
+            1,
+            $crawler->filter('meta[name="viewport"][content="width=device-width, initial-scale=1"]')
+        );
+        self::assertCount(1, $crawler->filter('link[rel="stylesheet"][href$="/assets/app.css"]'));
+        self::assertCount(1, $crawler->filter('.consent-card .field-grid'));
+        self::assertCount(1, $crawler->filter('.choice-area'));
+        self::assertCount(2, $crawler->filter('.choice-area input[type="radio"]'));
     }
 
     private function browserWithAdmin(): KernelBrowser

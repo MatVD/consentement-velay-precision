@@ -18,6 +18,16 @@ final class ResponsivePagesTest extends WebTestCase
         self::assertSelectorExists('link[rel="stylesheet"][href$="/assets/app.css"]');
     }
 
+    public function testUnknownConsentLinkStillHasMobileFriendlyErrorPage(): void
+    {
+        $browser = static::createClient();
+        $browser->request('GET', '/c/'.str_repeat('0', 64));
+
+        self::assertResponseStatusCodeSame(410);
+        self::assertSelectorExists('meta[name="viewport"][content="width=device-width, initial-scale=1"]');
+        self::assertSelectorExists('link[rel="stylesheet"][href$="/assets/app.css"]');
+    }
+
     public static function publicPages(): iterable
     {
         yield 'accueil' => ['/'];
