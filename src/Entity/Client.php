@@ -31,6 +31,19 @@ class Client
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $codialId = null;
 
+    // Contact fields are distinct from the company name and optional.
+    #[ORM\Column(length: 120, nullable: true)]
+    #[Assert\Length(max: 120)]
+    private ?string $contactFirstName = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    #[Assert\Length(max: 120)]
+    private ?string $contactLastName = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    #[Assert\Length(max: 120)]
+    private ?string $contactRole = null;
+
     #[ORM\Column(length: 20)]
     private string $status = self::TODO;
 
@@ -55,6 +68,17 @@ class Client
     public function setEmail(?string $email): self { $this->email = $email === null || trim($email) === '' ? null : mb_strtolower(trim($email)); return $this; }
     public function getCodialId(): ?string { return $this->codialId; }
     public function setCodialId(?string $id): self { $this->codialId = $id === null || trim($id) === '' ? null : trim($id); return $this; }
+    public function getContactFirstName(): ?string { return $this->contactFirstName; }
+    public function setContactFirstName(?string $value): self { $this->contactFirstName = self::optionalText($value); return $this; }
+    public function getContactLastName(): ?string { return $this->contactLastName; }
+    public function setContactLastName(?string $value): self { $this->contactLastName = self::optionalText($value); return $this; }
+    public function getContactRole(): ?string { return $this->contactRole; }
+    public function setContactRole(?string $value): self { $this->contactRole = self::optionalText($value); return $this; }
+    private static function optionalText(?string $value): ?string
+    {
+        $trimmed = trim($value ?? '');
+        return $trimmed === '' ? null : $trimmed;
+    }
     public function getStatus(): string { return $this->status; }
     public function getStatusLabel(): string
     {

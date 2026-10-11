@@ -7,37 +7,46 @@ use PHPUnit\Framework\TestCase;
 
 final class ConsentPrefillTest extends TestCase
 {
-    public function testPrefillsClientNameWithoutSelectingAChoice(): void
+    public function testNeverInfersPersonalIdentityFromCompanyName(): void
     {
-        $data = ConsentPrefill::forClient((new Client())->setName('Mat VD'));
-
-        self::assertSame('Mat', $data->firstName);
-        self::assertSame('VD', $data->lastName);
+        $data = ConsentPrefill::forClient((new Client())->setName('Boulangerie Martin'));
+        self::assertSame('', $data->firstName);
+        self::assertSame('', $data->lastName);
         self::assertSame('', $data->signatoryRole);
         self::assertNull($data->choice);
     }
 
-    public function testKeepsRemainderOfNameTogetherForCorrection(): void
+    public function testPrefillsOnlyExplicitlyRecordedContact(): void
     {
-        $data = ConsentPrefill::forClient((new Client())->setName('Jean Claude Van Damme'));
+        $client = (new Client())->setName('Boulangerie Martin')
+            ->setContactFirstName('Anne')
+            ->setContactLastName('Martin')
+            ->setContactRole('Gérante');
+        $data = ConsentPrefill::forClient($client);
 
-        self::assertSame('Jean', $data->firstName);
-        self::assertSame('Claude Van Damme', $data->lastName);
+        self::assertSame('Anne', $data->firstName);
+        self::assertSame('Martin', $data->lastName);
+        self::assertSame('Gérante', $data->signatoryRole);
+        self::assertNull($data->choice);
     }
 
-    public function testDoesNotGuessWhenNameCannotBeSplit(): void
+    public function testBlankOptionalContactsAreNormalized(): void
     {
-        $data = ConsentPrefill::forClient((new Client())->setName('Boulangerie'));
-
-        self::assertSame('', $data->firstName);
-        self::assertSame('', $data->lastName);
+        $client = (new Client())->setName('Client')
+            ->setContactFirstName('  ')
+            ->setContactLastName(null)
+            ->setContactRole('');
+        self::assertNull($client->getContactFirstName());
+        self::assertNull($client->getContactLastName());
+        self::assertNull($client->getContactRole());
     }
 
-    public function testDoesNotOverflowFields(): void
+    public function testDoesNotInventMissingFieldsOfPartialContact(): void
     {
-        $data = ConsentPrefill::forClient((new Client())->setName('Jean '.str_repeat('X', 121)));
-
+        $client = (new Client())->setName('Boulangerie Martin')->setContactLastName('Martin');
+        $data = ConsentPrefill::forClient($client);
         self::assertSame('', $data->firstName);
-        self::assertSame('', $data->lastName);
+        self::assertSame('Martin', $data->lastName);
+        self::assertNull($data->choice);
     }
 }

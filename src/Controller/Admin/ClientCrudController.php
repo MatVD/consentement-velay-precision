@@ -32,9 +32,15 @@ final class ClientCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield IdField::new('id')->onlyOnDetail();
-        yield TextField::new('name', 'Identité');
-        yield EmailField::new('email', 'Email');
-        yield TextField::new('codialId', 'Référence Codial')->hideOnIndex();
+        yield TextField::new('name', 'Entreprise / client')
+            ->setHelp('Raison sociale ou nom du client, sans déduire l’identité de son représentant.');
+        yield EmailField::new('email', 'Email d’invitation')->setRequired(false);
+        yield TextField::new('codialId', 'Référence Codial')->hideOnIndex()->setRequired(false);
+        yield TextField::new('contactFirstName', 'Prénom du représentant')
+            ->hideOnIndex()->setRequired(false)
+            ->setHelp('Facultatif : uniquement si le prénom du représentant est connu.');
+        yield TextField::new('contactLastName', 'Nom du représentant')->hideOnIndex()->setRequired(false);
+        yield TextField::new('contactRole', 'Fonction du représentant')->hideOnIndex()->setRequired(false);
         yield ChoiceField::new('status', 'Statut')
             ->setChoices(['À faire' => Client::TODO, 'Mail envoyé' => Client::SENT, 'Oui' => Client::YES, 'Non' => Client::NO])
             ->renderAsBadges([Client::TODO => 'secondary', Client::SENT => 'info', Client::YES => 'success', Client::NO => 'danger'])
