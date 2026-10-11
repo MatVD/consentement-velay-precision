@@ -5,6 +5,10 @@ use App\Entity\AuditEvent;
 use App\Entity\Client;
 use App\Entity\ConsentDecision;
 use App\Entity\EvidenceFile;
+use App\Form\ConsentType;
+use App\Service\ConsentPolicy;
+use App\Service\ConsentPrefill;
+use App\Service\ConsentRecorder;
 use App\Service\EvidenceArchive;
 use App\Service\InvitationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -61,6 +65,40 @@ final class ClientActionsController extends AbstractController
             $this->addFlash('danger', $e->getMessage());
         }
         return $this->redirectToRoute('admin_client_index');
+    }
+
+    #[AdminRoute(path: '/clients/{id}/assisted', name: 'client_assisted', options: ['requirements' => ['id' => '\\d+'], 'methods' => ['GET', 'POST']])]
+    public function assisted(Client $client, Request $request, ConsentRecorder $recorder): Response
+    {
+        if (in_array($client->getStatus(), [Client::YES, Client::NO], true)) {
+            $this->addFlash('warning', 'Une décision définitive existe déjà pour ce client.');
+            return $this->redirectToRoute('admin_client_index');
+        }
+
+        $data = ConsentPrefill::forClient($client);
+        $form = $this->createForm(ConsentType::class, $data, ['assisted' => true]);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $operator = $this->getUser();
+            if ($operator === null) {
+                throw $this->createAccessDeniedException('Authentification requise.');
+            }
+            try {
+                $recorder->recordAssisted($client, $data, $request, $operator->getUserIdentifier());
+                $this->addFlash('success', 'Décision enregistrée et justificatif créé.');
+                return $this->redirectToRoute('admin_client_index', [], Response::HTTP_SEE_OTHER);
+            } catch (\DomainException $exception) {
+                $this->addFlash('warning', $exception->getMessage());
+                return $this->redirectToRoute('admin_client_index', [], Response::HTTP_SEE_OTHER);
+            }
+        }
+
+        return $this->render('admin/client_assisted.html.twig', [
+            'client' => $client,
+            'form' => $form,
+            'policy' => ConsentPolicy::TEXT,
+            'text_version' => ConsentPolicy::VERSION,
+        ], new Response(headers: ['Cache-Control' => 'private, no-store']));
     }
 
     #[Route('/admin/proofs/{id}/download', name: 'admin_proof_download', requirements: ['id' => '\\d+'], methods: ['GET'])]

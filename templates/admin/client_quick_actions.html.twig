@@ -4,6 +4,7 @@
 {% set email_indisponible = decision_finale or not client.email %}
 {% set email_aide = decision_finale ? 'Décision déjà enregistrée' : (not client.email ? 'Adresse email manquante' : 'Envoyer le formulaire par email') %}
 {% set presentiel_aide = decision_finale ? 'Décision déjà enregistrée' : 'Générer un lien présentiel' %}
+{% set assistance_aide = decision_finale ? 'Décision déjà enregistrée' : 'Remplir le formulaire avec le client' %}
 
 <div class="d-inline-flex align-items-center gap-2" role="group" aria-label="Actions pour {{ client.name }}">
     <form method="post" action="{{ path('admin_client_send_email', {id: client.id}) }}" class="m-0" title="{{ email_aide }}">
@@ -20,4 +21,16 @@
             <i class="fa fa-link" aria-hidden="true"></i>
         </button>
     </form>
+    {% if decision_finale %}
+        <span class="btn btn-sm btn-outline-secondary disabled" title="{{ assistance_aide }}"
+              role="button" aria-disabled="true" aria-label="{{ assistance_aide }}">
+            <i class="fa fa-user-pen" aria-hidden="true"></i>
+        </span>
+    {% else %}
+        <a href="{{ path('admin_client_assisted', {id: client.id}) }}"
+           class="btn btn-sm btn-outline-secondary" title="{{ assistance_aide }}"
+           aria-label="{{ assistance_aide }}">
+            <i class="fa fa-user-pen" aria-hidden="true"></i>
+        </a>
+    {% endif %}
 </div>
