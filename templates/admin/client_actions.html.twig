@@ -12,25 +12,38 @@
   {% if decisions is empty %}
     <p>Aucune réponse pour ce client.</p>
   {% else %}
+    <div class="responsive-data-table" role="region" aria-label="Décisions enregistrées" tabindex="0">
     <table class="table table-striped">
-      <thead><tr><th>Date UTC</th><th>Personne déclarée</th><th>Qualité</th><th>Décision</th><th>Justificatif</th></tr></thead>
+      <thead><tr><th>Date</th><th>Personne déclarée</th><th>Qualité</th><th>Décision</th><th>Justificatif</th></tr></thead>
       <tbody>
       {% for decision in decisions %}
         <tr>
-          <td>{{ decision.decidedAt|date('d/m/Y H:i', 'Europe/Paris') }}</td>
-          <td>{{ decision.firstName }} {{ decision.lastName }}</td>
-          <td>{{ decision.signatoryRole }}</td>
-          <td>{{ decision.choice == 'yes' ? 'Oui' : 'Non' }}</td>
-          <td>{% for proof in files %}{% if proof.decision.id == decision.id %}<a href="{{ path('admin_proof_download', {id: proof.id}) }}">Télécharger le PDF</a>{% endif %}{% endfor %}</td>
+          <td data-label="Date">{{ decision.decidedAt|date('d/m/Y H:i', 'Europe/Paris') }}</td>
+          <td data-label="Personne">{{ decision.firstName }} {{ decision.lastName }}</td>
+          <td data-label="Qualité">{{ decision.signatoryRole }}</td>
+          <td data-label="Décision">{{ decision.choice == 'yes' ? 'Oui' : 'Non' }}</td>
+          <td data-label="Justificatif">{% for proof in files %}{% if proof.decision.id == decision.id %}<a href="{{ path('admin_proof_download', {id: proof.id}) }}">Télécharger le PDF</a>{% endif %}{% endfor %}</td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
+    </div>
   {% endif %}
   <h2 class="mt-4">Historique récent</h2>
   {% if events is empty %}<p>Pas d'événements.</p>{% else %}
-    <table class="table table-striped"><thead><tr><th>Date</th><th>Événement</th><th>Origine</th></tr></thead><tbody>
-      {% for event in events %}<tr><td>{{ event.createdAt|date('d/m/Y H:i', 'Europe/Paris') }}</td><td>{{ event.type }}</td><td>{{ event.actorType }}</td></tr>{% endfor %}
-    </tbody></table>
+    <div class="responsive-data-table" role="region" aria-label="Historique récent" tabindex="0">
+      <table class="table table-striped">
+        <thead><tr><th>Date</th><th>Événement</th><th>Origine</th></tr></thead>
+        <tbody>
+        {% for event in events %}
+          <tr>
+            <td data-label="Date">{{ event.createdAt|date('d/m/Y H:i', 'Europe/Paris') }}</td>
+            <td data-label="Événement">{{ event.type }}</td>
+            <td data-label="Origine">{{ event.actorType }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% endif %}
 {% endblock %}

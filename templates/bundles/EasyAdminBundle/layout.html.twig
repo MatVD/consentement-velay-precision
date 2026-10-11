@@ -1,0 +1,13 @@
+{# Keep EasyAdmin's layout and CSP behavior, but allow users to zoom on mobile. #}
+{% extends '@!EasyAdmin/layout.html.twig' %}
+
+{% block head_metas %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noodp, noimageindex, notranslate, nocache">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="EasyAdmin">
+    {% guard function csp_nonce %}
+        <meta name="csp-nonce" content="{{ csp_nonce('style') }}">
+    {% endguard %}
+{% endblock %}

@@ -4,10 +4,10 @@
   {% for type, messages in app.flashes %}{% for message in messages %}<div class="alert alert-{{ type == 'danger' ? 'danger' : 'success' }}">{{ message }}</div>{% endfor %}{% endfor %}
   <p>CSV encodé en UTF-8, séparateur point-virgule. Colonne <code>Identité</code> obligatoire, colonnes <code>Email</code> et <code>Référence Codial</code> facultatives.</p>
   <p>Les doublons simples sont ignorés. L'import ne change jamais les statuts déjà enregistrés.</p>
-  <pre>Identité;Email;Référence Codial
+  <pre class="csv-example" role="region" aria-label="Exemple de fichier CSV" tabindex="0">Identité;Email;Référence Codial
 Boulangerie Martin;contact@example.fr;COD123
 Restaurant du Centre;restaurant@example.fr;COD124</pre>
-  <form method="post" enctype="multipart/form-data">
+  <form method="post" enctype="multipart/form-data" class="csv-import-form">
       <input type="hidden" name="_token" value="{{ csrf_token('import_clients') }}">
       <div class="mb-3"><input class="form-control" type="file" name="csv" accept=".csv,text/csv" required></div>
       <button class="btn btn-primary" type="submit">Importer</button>
