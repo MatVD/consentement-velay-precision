@@ -6,3 +6,5 @@ framework:
         cookie_secure: auto
         cookie_samesite: lax
     http_method_override: false
+    property_info:
+        with_constructor_extractor: false
