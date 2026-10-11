@@ -164,3 +164,23 @@ docker compose -f compose.yaml -f compose.dev.yaml exec -T app php bin/console d
 - SMTP réel, hébergement HTTPS, RGPD et sauvegarde/restauration externalisée (phases 3 et 4).
 
 **Règle de reprise :** ne démarrer la phase 3, ne fusionner dans `main` et ne déployer publiquement qu'après instruction explicite. La branche phase 2 contient la phase 1 en historique, car celle-ci n'avait pas encore été fusionnée à `main`.
+
+## Correction après retour utilisateur — responsive mobile (11 octobre 2026)
+
+**Retour :** capture de la liste Clients sur mobile avec superposition des libellés « Email d'invitation », « Statut », « Date » et « Actions rapides ».
+
+**Cause établie :** EasyAdmin 5 fournit un style datagrid mobile avec pseudo-libellés en `position: absolute`, largeur `35%`, et retrait de `35%` sur les cellules. Les styles de fiches personnalisés ne réinitialisaient pas ces propriétés.
+
+**Branche de correction :** `fix/responsive-review-phase2` basée sur `feat/roadmap-phase-2-data-ux`.
+
+**Commits :**
+- `9a3e0d1` : réinitialisation ciblée des styles mobiles du tableau Clients, vrais libellés des boutons, meilleure disposition des tableaux de suivi, en-tête adapté aux écrans étroits et tests de garde CSS ;
+- `ab88e38` : tests de non-régression sur les pages publiques et les écrans administratifs (liste, ajout, édition, formulaire assisté, suivi, import CSV).
+
+**Contrôles effectués :**
+- Suite complète avec PostgreSQL de test isolé : **38 tests et 224 assertions réussis**.
+- 13 templates Twig, 11 fichiers YAML, conteneur Symfony, schéma Doctrine : valides.
+- Inspection HTML en Brave : index Clients, nouveau client, modification, suivi / preuves, import CSV, accueil et confirmation ; ouverture du filtre vérifiée.
+- Le formulaire public et le cas d'un lien invalide sont également couverts par des tests HTTP.
+
+**Limites et contrôle utilisateur restant :** les outils navigateur disponibles permettent la navigation et l'inspection du DOM, mais **pas un contrôle visuel effectif à toutes les largeurs d'écran**. La checklist des tailles **320 / 375 / 390 / 768 / 1024 / 1440 px** et des parcours est consignée dans `docs/RESPONSIVE_QA.md`. La fusion dans `main` et le lancement de la phase 3 attendent toujours le feu vert utilisateur.

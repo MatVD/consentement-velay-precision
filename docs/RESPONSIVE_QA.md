@@ -39,3 +39,47 @@ Utiliser l’émulation responsive des outils de développement de Brave/Chrome 
 | Lien présentiel généré | URL et bouton « Ouvrir » ne dépassent pas la largeur de l’écran |
 
 **État 11 octobre 2026 :** inspection Brave desktop effectuée sur l'administration en français et sur la présence des styles/contrôles. Les largeurs 320/375/390/768/1024/1440 px et la rotation sur appareils réels restent à vérifier manuellement. Ne pas enregistrer de décision réelle pour tester l'affichage ; utiliser un client de test.
+
+## Audit correctif — retour utilisateur du 11 octobre 2026
+
+### Défaut avéré : libellés superposés dans les fiches Clients
+
+La capture sur petit écran montre les libellés « Email d'invitation », « Statut », « Date » et « Actions rapides » superposés aux contenus.
+
+**Origine vérifiée :** le CSS responsive fourni avec **EasyAdmin 5** applique `position: absolute` et `inline-size: 35%` aux `td::before` et `padding-inline-start: 35%` aux cellules de ses datagrids. Notre propre présentation de la liste Clients en fiches omettait de neutraliser ces styles.
+
+**Correctif :** dans `public/assets/admin.css`, sous 768 px et **uniquement sur `.ea-index-Client`**, cellules et pseudo-libellés reviennent dans le flux normal (position statique, largeur automatique, retrait gauche nul). Les libellés sont placés **au-dessus** des valeurs ; les séparateurs et hauteurs des cartes sont simplifiés.
+
+Les actions **Email**, **Présentiel** et **Accompagner** disposent maintenant de vrais libellés HTML, masqués sur desktop et visibles sous 768 px, plutôt que de texte généré avec `::after`. Les zones tactiles principales restent d'au moins 44 px.
+
+### Passe complémentaire sur les autres écrans
+
+| Zone | Risque examiné et adaptation | Vérification automatique |
+| --- | --- | --- |
+| Clients / filtres / tri | Cartes, boutons, libellés, menu d'actions ; le filtre s'ouvre aussi dans Brave | HTML, CSS, tests d'actions |
+| Création / modification client | Champs et groupes « Informations du client » / « Représentant », textes longs | Viewport + CSS + formulaire |
+| Saisie assistée | Champs prénom/nom, radios, confirmation, boutons de validation | Route et formulaire |
+| Suivi / preuves | Libellés des tableaux pouvant se resserrer et liens PDF longs ; présentation verticale adaptée sous 768 px | Tables et liens par tests HTML |
+| Import CSV | Exemple long dans une zone défilante, bouton et rapport des rejets | Route et CSS de défilement |
+| En-tête de l'admin | Titre long sur écran étroit ; rétrécissement et ellipsis, police réduite sous 400 px | Structure et règles CSS |
+| Accueil / connexion / merci / lien invalide | Mise en page mobile-first indépendante du datagrid | Viewport, CSS public et codes HTTP |
+| Formulaire public de consentement | Grille d'identité et groupe Oui/Non | Test avec invitation fictive en base isolée |
+
+**Automatisé :** tests PHPUnit du CSS et des parcours ; lint Twig/YAML, conteneur Symfony et schéma Doctrine. La suite reste non destructive pour les données client de l'application : les scénarios persistants sont exécutés dans la base de test `velay_phase1_test`.
+
+**Limite de vérification :** l'outil Brave disponible dans cette session permet de lire le DOM et d'utiliser les contrôles, mais pas de redimensionner la fenêtre pour calculer les collisions exactes à chaque largeur. Aucun succès visuel pixel-par-pixel n'est revendiqué sur les tailles suivantes.
+
+### Contrôle visuel à faire après actualisation sans cache
+
+- [ ] **320 px** : en-tête tronqué proprement ; « Ajouter un client » visible ; chaque ligne Clients = carte à libellés au-dessus des valeurs, trois actions accessibles.
+- [ ] **375 et 390 px** : ni libellé superposé ni défilement horizontal global ; actions rapides sur une ou deux lignes sans chevauchement.
+- [ ] **768 px** : bascule vers le tableau habituel, sans cellules décalées ; filtres et tri utilisables.
+- [ ] **1024 et 1440 px** : tableau desktop inchangé ; icônes rapides compactes, infobulles accessibles.
+- [ ] **Création / édition** : nom commercial et champs du représentant sans débordement ; validation visible.
+- [ ] **Saisie assistée** : boutons et textes lisibles, y compris en paysage.
+- [ ] **Suivi / preuves** : tableaux en fiches sur mobile, liens « Télécharger le PDF » lisibles.
+- [ ] **Import CSV** : l'exemple défile dans sa propre zone, sans élargir toute la page.
+- [ ] **Formulaires publics** : champs sans zoom iOS forcé, choix Oui/Non non tronqués.
+- [ ] **Rotation / zoom à 200 %** : pas d'éléments obligatoires masqués.
+
+Sur Brave/Chrome, actualiser sans cache (par exemple Cmd + Maj + R sur macOS) avant de reprendre une capture : `assets/admin.css` conserve la même URL.
