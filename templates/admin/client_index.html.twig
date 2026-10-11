@@ -1,0 +1,20 @@
+{% extends '@EasyAdmin/crud/index.html.twig' %}
+
+{# Afficher les liens individuels dans le contenu de la liste, pas dans une fiche client. #}
+{% block flash_messages %}{% endblock %}
+
+{% block main %}
+    {% for link in app.flashes('onsite_link') %}
+        <div class="alert alert-info mb-3" role="status">
+            <strong>Lien présentiel généré (valable 24 heures)</strong>
+            <p class="mb-2">Copiez le lien pour le présenter au client :</p>
+            <div class="input-group">
+                <input type="text" class="form-control" value="{{ link }}" readonly
+                       aria-label="Lien présentiel à copier" onfocus="this.select()">
+                <a href="{{ link }}" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">Ouvrir</a>
+            </div>
+        </div>
+    {% endfor %}
+    {{ include('@EasyAdmin/flash_messages.html.twig') }}
+    {{ parent() }}
+{% endblock %}

@@ -8,16 +8,6 @@
   {% endfor %}
   <p><strong>Statut :</strong> {{ client.statusLabel }} · <strong>Email :</strong> {{ client.email ?: 'Non renseigné' }}</p>
   <p><strong>Référence Codial :</strong> {{ client.codialId ?: '—' }}</p>
-  <div class="d-flex gap-2 flex-wrap mb-4">
-    <form method="post" action="{{ path('admin_client_send_email', {id: client.id}) }}">
-      <input type="hidden" name="_token" value="{{ csrf_token('send_' ~ client.id) }}">
-      <button class="btn btn-primary" type="submit" {% if not client.email or client.status in ['yes','no'] %}disabled{% endif %}>Envoyer le formulaire par email</button>
-    </form>
-    <form method="post" action="{{ path('admin_client_onsite', {id: client.id}) }}">
-      <input type="hidden" name="_token" value="{{ csrf_token('onsite_' ~ client.id) }}">
-      <button class="btn btn-outline-primary" type="submit" {% if client.status in ['yes','no'] %}disabled{% endif %}>Générer un lien présentiel</button>
-    </form>
-  </div>
   <h2>Décisions enregistrées</h2>
   {% if decisions is empty %}
     <p>Aucune réponse pour ce client.</p>

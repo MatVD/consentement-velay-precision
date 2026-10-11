@@ -10,6 +10,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
@@ -24,7 +25,8 @@ final class ClientCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Clients')
             ->setDefaultSort(['id' => 'DESC'])
             ->setSearchFields(['name', 'email', 'codialId'])
-            ->setPaginatorPageSize(25);
+            ->setPaginatorPageSize(25)
+            ->overrideTemplate('crud/index', 'admin/client_index.html.twig');
     }
 
     public function configureFields(string $pageName): iterable
@@ -38,6 +40,11 @@ final class ClientCrudController extends AbstractCrudController
             ->renderAsBadges([Client::TODO => 'secondary', Client::SENT => 'info', Client::YES => 'success', Client::NO => 'danger'])
             ->hideOnForm();
         yield DateTimeField::new('statusAt', 'Date')->hideOnForm()->setFormat('dd/MM/yyyy HH:mm');
+        yield Field::new('quickActions', 'Actions rapides')
+            ->setVirtual(true)
+            ->setSortable(false)
+            ->setTemplatePath('admin/client_quick_actions.html.twig')
+            ->onlyOnIndex();
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -50,7 +57,7 @@ final class ClientCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $follow = Action::new('suivi', 'Formulaire / preuves', 'fa fa-file-signature')
+        $follow = Action::new('suivi', 'Suivi / preuves', 'fa fa-file-signature')
             ->linkToRoute('admin_client_actions', static fn (Client $client): array => ['id' => $client->getId()]);
         return $actions
             ->add(Crud::PAGE_INDEX, $follow)

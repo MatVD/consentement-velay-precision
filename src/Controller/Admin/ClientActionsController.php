@@ -45,7 +45,7 @@ final class ClientActionsController extends AbstractController
         } catch (\Throwable) {
             $this->addFlash('danger', 'Envoi impossible : vérifier le client, le SMTP et les journaux serveur.');
         }
-        return $this->redirectToRoute('admin_client_actions', ['id' => $client->getId()]);
+        return $this->redirectToRoute('admin_client_index');
     }
 
     #[Route('/admin/clients/{id}/onsite', name: 'admin_client_onsite', requirements: ['id' => '\\d+'], methods: ['POST'])]
@@ -60,7 +60,7 @@ final class ClientActionsController extends AbstractController
         } catch (\DomainException $e) {
             $this->addFlash('danger', $e->getMessage());
         }
-        return $this->redirectToRoute('admin_client_actions', ['id' => $client->getId()]);
+        return $this->redirectToRoute('admin_client_index');
     }
 
     #[Route('/admin/proofs/{id}/download', name: 'admin_proof_download', requirements: ['id' => '\\d+'], methods: ['GET'])]
