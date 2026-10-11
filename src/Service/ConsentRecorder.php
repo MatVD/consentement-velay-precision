@@ -24,7 +24,7 @@ final class ConsentRecorder
         $createdEvidence = null;
         try {
             return $this->em->wrapInTransaction(function (EntityManagerInterface $em) use ($client, $submission, $httpRequest, $operator, &$createdEvidence): ConsentDecision {
-                $em->lock($client, LockMode::PESSIMISTIC_WRITE);
+                $em->refresh($client, LockMode::PESSIMISTIC_WRITE);
                 if (in_array($client->getStatus(), [Client::YES, Client::NO], true)) {
                     throw new \DomainException('Une décision définitive est déjà enregistrée.');
                 }
@@ -72,9 +72,11 @@ final class ConsentRecorder
                 $invitation = $em->getRepository(ConsentRequest::class)->findOneBy(['tokenHash' => hash('sha256', $token)]);
                 if (!$invitation) { throw new \DomainException('Lien introuvable.'); }
 
-                $em->lock($invitation, LockMode::PESSIMISTIC_WRITE);
+                // Always lock the client first (as InvitationService does), then
+                // refresh the invitation. This also prevents stale status reads.
                 $client = $invitation->getClient();
-                $em->lock($client, LockMode::PESSIMISTIC_WRITE);
+                $em->refresh($client, LockMode::PESSIMISTIC_WRITE);
+                $em->refresh($invitation, LockMode::PESSIMISTIC_WRITE);
                 if (!$invitation->isOpen() || in_array($client->getStatus(), [Client::YES, Client::NO], true)) {
                     throw new \DomainException('Ce formulaire n’est plus disponible.');
                 }
