@@ -65,8 +65,8 @@ Le responsable de la « Boulangerie Martin » souhaite répondre depuis son bure
 
 ### Parcours utilisateur
 
-1. Ouvrir la fiche du client, puis **Formulaire / preuves**.
-2. Cliquer sur **Envoyer le formulaire par email**.
+1. Ouvrir la liste **Clients** et retrouver le client.
+2. Sur sa ligne, survoler l'icône **enveloppe** puis cliquer pour **envoyer le formulaire par email**.
 3. L'application génère un lien individuel valable **14 jours** et envoie l'invitation.
 4. Vérifier que le statut du client passe à **Mail envoyé** après envoi réussi.
 5. Le client ouvre le lien, lit le texte, saisit prénom, nom et fonction, puis sélectionne **Oui** ou **Non**.
@@ -76,6 +76,7 @@ Le responsable de la « Boulangerie Martin » souhaite répondre depuis son bure
 ### Critères d'acceptation
 
 - **Étant donné** un client sans email, **quand** le collaborateur souhaite l'inviter, **alors** l'envoi doit être empêché.
+- L'action email est directement accessible dans la liste des clients, avec une infobulle explicative au survol.
 - **Étant donné** un envoi réussi, **quand** l'email part, **alors** le statut devient **Mail envoyé** et l'historique conserve les événements associés.
 - **Étant donné** un lien valide non utilisé, **quand** le client valide une décision, **alors** le statut devient **Oui** ou **Non**, et le justificatif PDF est enregistré.
 - **Étant donné** un lien déjà utilisé, expiré ou inconnu, **quand** il est ouvert, **alors** le formulaire n'est plus accessible.
@@ -95,9 +96,9 @@ Pendant l'installation d'une balance chez un boucher, le technicien propose le f
 
 ### Parcours utilisateur
 
-1. Retrouver la fiche du client et ouvrir **Formulaire / preuves**.
-2. Cliquer sur **Générer un lien présentiel**.
-3. Ouvrir le lien individuel sur un appareil pouvant accéder à l'application.
+1. Ouvrir la liste **Clients** et retrouver le client.
+2. Sur sa ligne, survoler l'icône **lien**, puis cliquer pour **générer un lien présentiel**.
+3. Copier ou ouvrir le lien individuel affiché en haut de la liste sur un appareil pouvant accéder à l'application.
 4. Laisser le représentant du client prendre connaissance du texte et renseigner ses informations.
 5. Le représentant choisit **Oui, j'accepte** ou **Non, je refuse**, puis confirme.
 6. Le collaborateur vérifie le statut et le justificatif dans la fiche.
@@ -105,6 +106,7 @@ Pendant l'installation d'une balance chez un boucher, le technicien propose le f
 ### Critères d'acceptation
 
 - **Étant donné** un client sans décision définitive, **quand** un lien présentiel est généré, **alors** il est valable **24 heures**.
+- L'action présentielle est directement accessible dans la liste, avec une infobulle ; le lien généré est affiché dans cette même liste.
 - La génération du lien, à elle seule, ne change pas le statut **À faire** en **Mail envoyé**.
 - **Étant donné** un refus, **quand** le formulaire est validé, **alors** le statut devient **Non** et un justificatif est généré.
 - **Étant donné** une décision déjà enregistrée, **quand** le lien est réutilisé ou une nouvelle invitation demandée, **alors** le parcours normal ne permet pas de remplacer la décision.
@@ -125,7 +127,7 @@ Le responsable souhaite identifier les clients encore en attente et retrouver la
 
 1. Ouvrir l'administration et consulter la liste **Clients**.
 2. Rechercher un client ou filtrer la liste par statut.
-3. Ouvrir **Formulaire / preuves** pour consulter les décisions et l'historique.
+3. Ouvrir **Suivi / preuves** pour consulter les décisions et l'historique.
 4. Télécharger le justificatif PDF associé à une décision existante.
 5. Cliquer sur **Exporter le CSV** pour récupérer le suivi.
 

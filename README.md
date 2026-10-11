@@ -67,7 +67,7 @@ Docker Engine / Docker Desktop et le plugin `docker compose` fonctionnel ; accè
    - Administration : http://localhost:8081/admin
    - Emails de test (Mailpit) : http://localhost:8025
 
-7. Dans EasyAdmin, ajouter un client, renseigner son email, cliquer sur **Formulaire / preuves**, puis envoyer l'invitation ou générer un lien présentiel.
+7. Dans EasyAdmin, ajouter un client, renseigner son email, puis utiliser les icônes **enveloppe** (envoi email) ou **lien** (présentiel) directement dans la liste **Clients**. Survoler une icône pour afficher son infobulle. Le lien présentiel valable 24 heures s'affiche en haut de la liste. Le menu **Suivi / preuves** permet de consulter les décisions et les justificatifs.
 
 ### Import CSV
 
