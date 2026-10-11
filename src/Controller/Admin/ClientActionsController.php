@@ -8,6 +8,7 @@ use App\Entity\EvidenceFile;
 use App\Service\EvidenceArchive;
 use App\Service\InvitationService;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ClientActionsController extends AbstractController
 {
-    #[Route('/admin/clients/{id}/actions', name: 'admin_client_actions', requirements: ['id' => '\\d+'], methods: ['GET'])]
+    #[AdminRoute(path: '/clients/{id}/actions', name: 'client_actions', options: ['requirements' => ['id' => '\\d+'], 'methods' => ['GET']])]
     public function actions(Client $client, EntityManagerInterface $em): Response
     {
         $files = $em->createQueryBuilder()
