@@ -11,6 +11,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
@@ -32,10 +33,17 @@ final class ClientCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield IdField::new('id')->onlyOnDetail();
+        if (in_array($pageName, [Crud::PAGE_NEW, Crud::PAGE_EDIT], true)) {
+            yield FormField::addFieldset('Informations du client');
+        }
         yield TextField::new('name', 'Entreprise / client')
             ->setHelp('Raison sociale ou nom du client, sans déduire l’identité de son représentant.');
         yield EmailField::new('email', 'Email d’invitation')->setRequired(false);
         yield TextField::new('codialId', 'Référence Codial')->hideOnIndex()->setRequired(false);
+        if (in_array($pageName, [Crud::PAGE_NEW, Crud::PAGE_EDIT], true)) {
+            yield FormField::addFieldset('Représentant (facultatif)')
+                ->setHelp('Ces informations servent uniquement à proposer des valeurs modifiables au technicien.');
+        }
         yield TextField::new('contactFirstName', 'Prénom du représentant')
             ->hideOnIndex()->setRequired(false)
             ->setHelp('Facultatif : uniquement si le prénom du représentant est connu.');
@@ -68,6 +76,7 @@ final class ClientCrudController extends AbstractCrudController
         return $actions
             ->add(Crud::PAGE_INDEX, $follow)
             ->add(Crud::PAGE_DETAIL, $follow)
+            ->update(Crud::PAGE_INDEX, Action::NEW, static fn (Action $action): Action => $action->setLabel('Ajouter un client'))
             ->disable(Action::DELETE);
     }
 }

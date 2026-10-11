@@ -30,6 +30,13 @@
     </div>
   {% endif %}
   <h2 class="mt-4">Historique récent</h2>
+  {% set event_labels = {
+    'link_created': 'Lien créé',
+    'email_sent': 'Invitation envoyée',
+    'email_failed': 'Échec de l’envoi',
+    'decision_recorded': 'Décision enregistrée'
+  } %}
+  {% set actor_labels = {'admin': 'Collaborateur', 'client': 'Client', 'system': 'Système'} %}
   {% if events is empty %}<p>Pas d'événements.</p>{% else %}
     <div class="responsive-data-table" role="region" aria-label="Historique récent" tabindex="0">
       <table class="table table-striped">
@@ -38,8 +45,8 @@
         {% for event in events %}
           <tr>
             <td data-label="Date">{{ event.createdAt|date('d/m/Y H:i', 'Europe/Paris') }}</td>
-            <td data-label="Événement">{{ event.type }}</td>
-            <td data-label="Origine">{{ event.actorType }}</td>
+            <td data-label="Événement">{{ event_labels[event.type] ?? event.type }}</td>
+            <td data-label="Origine">{{ actor_labels[event.actorType] ?? event.actorType }}</td>
           </tr>
         {% endfor %}
         </tbody>
