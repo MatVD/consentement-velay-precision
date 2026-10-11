@@ -1,0 +1,51 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}Recueillir le choix en présentiel{% endblock %}
+
+{% block main %}
+    <div class="mb-3">
+        <a href="{{ path('admin_client_index') }}" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left" aria-hidden="true"></i> Retour aux clients
+        </a>
+    </div>
+
+    <div class="card" style="max-width: 880px;">
+        <div class="card-body">
+            <div class="alert alert-info" role="note">
+                <strong>Client sélectionné : {{ client.name }}</strong>
+                <div>Le nom et le prénom sont proposés à partir de sa fiche. Vérifiez l'identité du représentant présent et corrigez ces champs si nécessaire.</div>
+            </div>
+
+            <h2 class="h4">Accord concernant la signature électronique</h2>
+            <p>Cette réponse ne signe aucun devis, contrat ou document futur.</p>
+            <div class="border rounded p-3 mb-4">
+                <h3 class="h5">Texte présenté au client (version {{ text_version }})</h3>
+                <p class="mb-0">{{ policy }}</p>
+            </div>
+
+            {{ form_start(form) }}
+                {{ form_errors(form) }}
+                <h3 class="h5">Identité du représentant</h3>
+                <div class="row">
+                    <div class="col-md-6">{{ form_row(form.firstName) }}</div>
+                    <div class="col-md-6">{{ form_row(form.lastName) }}</div>
+                </div>
+                {{ form_row(form.signatoryRole) }}
+                <div class="border rounded p-3 mb-3">
+                    <h3 class="h5">Choix exprimé par le client</h3>
+                    {{ form_row(form.choice) }}
+                </div>
+                <div class="mb-3">{{ form_row(form.assistedConfirmation) }}</div>
+                <p class="text-muted small">
+                    L'enregistrement est définitif. La date, le technicien connecté et la
+                    modalité de recueil seront conservés dans l'historique. Un justificatif PDF sera créé.
+                    L'identité du représentant reste déclarative.
+                </p>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-check" aria-hidden="true"></i> Enregistrer la décision
+                </button>
+                <a href="{{ path('admin_client_index') }}" class="btn btn-link">Annuler</a>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

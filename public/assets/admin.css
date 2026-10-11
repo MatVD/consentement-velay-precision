@@ -1,0 +1,175 @@
+/* Complement EasyAdmin's styles without modifying vendor assets. */
+.ea .content, .ea .content-body, .ea .content-header, .ea .page-actions { min-width: 0; }
+.ea .content-body p, .ea .alert { overflow-wrap: anywhere; }
+.ea .client-link-flash .input-group { display: flex; flex-wrap: nowrap; width: 100%; max-width: 100%; }
+.ea .client-link-flash .form-control { min-width: 0; flex: 1 1 auto; }
+.ea .responsive-data-table { width: 100%; max-width: 100%; overflow-x: auto; }
+.ea .responsive-data-table table { width: 100%; min-width: 660px; }
+.ea .responsive-data-table td { overflow-wrap: anywhere; }
+.ea .csv-example {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 1rem;
+    border: 1px solid var(--border-color, #dce3ed);
+    border-radius: .6rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    white-space: pre;
+}
+.ea .csv-import-form { max-width: 680px; }
+.ea .csv-import-form input[type='file'] { max-width: 100%; }
+.ea .content-body .card, .ea .content-body .card-body { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.ea .content-body #consent_choice { display: grid; gap: .6rem; }
+.ea .content-body #consent_choice > div { display: flex; align-items: center; gap: .6rem; min-height: 44px; }
+.ea .content-body #consent_choice input[type='radio'] { flex: none; width: 20px; height: 20px; margin: 0; }
+.ea .content-body #consent_choice label { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.ea .content-body input[type='checkbox'] { min-width: 20px; min-height: 20px; }
+.ea .table.datagrid td[data-column='quickActions'] .btn:focus-visible,
+.ea .table.datagrid td[data-column='quickActions'] .btn:focus-visible i {
+    outline: 3px solid #4b97da;
+    outline-offset: 2px;
+}
+.ea .table.datagrid td[data-column='quickActions'] .btn { min-width: 36px; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; }
+.ea .table.datagrid td[data-column='quickActions'] [role='group'] { display: flex !important; flex-wrap: wrap; }
+
+/* Small screens: keep the essential client actions visible and present each row as a card. */
+@media (max-width: 767.98px) {
+    .ea .content-header { flex-wrap: wrap; align-items: flex-start; gap: .75rem; }
+    .ea .content-header .content-header-title { width: 100%; min-width: 0; overflow-wrap: anywhere; }
+    .ea .content-header .page-actions { width: 100%; display: flex; flex-wrap: wrap; gap: .5rem; }
+    .ea .content-header .page-actions .btn { min-height: 44px; }
+    .ea .content-body { max-width: 100%; }
+    .ea .form-control, .ea .form-select, .ea input[type='search'], .ea input[type='file'] { font-size: 16px; }
+    .ea .btn { max-width: 100%; }
+    .ea .client-link-flash .input-group { flex-direction: column; gap: .5rem; }
+    .ea .client-link-flash .input-group > .form-control { width: 100%; flex: auto; }
+    .ea .client-link-flash .input-group > .btn { width: 100%; margin: 0; min-height: 44px; }
+    .ea .csv-import-form .btn[type='submit'] { width: 100%; min-height: 44px; }
+    .ea .content-body .card { margin-inline: 0; }
+    .ea .content-body .card-body { padding: 1rem; }
+    .ea .content-body .card .btn[type='submit'], .ea .content-body .card .btn-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 44px;
+        margin-bottom: .5rem;
+        text-align: center;
+    }
+
+    .ea.page-index .table.datagrid,
+    .ea.page-index .table.datagrid tbody { display: block; width: 100%; max-width: 100%; }
+    .ea.page-index .table.datagrid thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+    .ea.page-index .table.datagrid tbody tr {
+        display: flex;
+        flex-direction: column;
+        gap: .65rem;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 0 1rem;
+        padding: 1rem;
+        border: 1px solid var(--border-color, #e1e7ef);
+        border-radius: .75rem;
+        background: var(--body-bg, #fff);
+    }
+    .ea.page-index .table.datagrid tbody td {
+        display: flex;
+        align-items: flex-start;
+        width: 100%;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        gap: .6rem;
+    }
+    .ea.page-index .table.datagrid tbody td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        flex: 0 0 6.2rem;
+        color: var(--text-muted, #66758a);
+        font-size: .75rem;
+        font-weight: 700;
+        line-height: 1.7;
+    }
+    .ea.page-index .table.datagrid tbody td[data-column='name'] {
+        order: -1;
+        font-size: 1.0625rem;
+        font-weight: 700;
+    }
+    .ea.page-index .table.datagrid tbody td[data-column='name']::before { display: none; }
+    .ea.page-index .table.datagrid tbody td[data-column='quickActions'] {
+        order: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: .45rem;
+        padding-top: .7rem;
+        border-top: 1px solid var(--border-color, #e1e7ef);
+    }
+    .ea.page-index .table.datagrid tbody td[data-column='quickActions']::before { flex: none; }
+    .ea.page-index .table.datagrid tbody td[data-column='quickActions'] [role='group'] { gap: .5rem !important; }
+    .ea.page-index .table.datagrid tbody td[data-column='quickActions'] .btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: .5rem .75rem;
+        font-size: 1rem;
+        gap: .45rem;
+    }
+    /* Titles alone do not work on touch screens: show action captions. */
+    .ea.page-index .table.datagrid tbody td[data-column='quickActions'] form[action$='/email'] .btn::after { content: 'Email'; }
+    .ea.page-index .table.datagrid tbody td[data-column='quickActions'] form[action$='/onsite'] .btn::after { content: 'Présentiel'; }
+    .ea.page-index .table.datagrid tbody td[data-column='quickActions'] a[href$='/assisted']::after,
+    .ea.page-index .table.datagrid tbody td[data-column='quickActions'] .btn.disabled::after { content: 'Accompagner'; }
+    .ea.page-index .table.datagrid tbody td[data-column='quickActions'] .btn::after { font-size: .8125rem; }
+    .ea.page-index .table.datagrid tbody td.actions {
+        order: 2;
+        display: flex;
+        justify-content: flex-end;
+        border-top: 1px solid var(--border-color, #e1e7ef);
+        padding-top: .25rem;
+    }
+    .ea.page-index .table.datagrid tbody td.actions .dropdown-toggle { min-height: 44px; min-width: 44px; }
+    .ea.page-index .table.datagrid tbody td.actions::before { display: none; }
+
+    .ea .responsive-data-table { overflow: visible; }
+    .ea .responsive-data-table table, .ea .responsive-data-table tbody { display: block; min-width: 0; width: 100%; }
+    .ea .responsive-data-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+    .ea .responsive-data-table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        padding: .75rem 1rem;
+        border: 1px solid var(--border-color, #e1e7ef);
+        border-radius: .75rem;
+    }
+    .ea .responsive-data-table tbody td { display: flex; gap: .6rem; align-items: flex-start; border: 0; padding: .35rem 0; }
+    .ea .responsive-data-table tbody td::before {
+        content: attr(data-label);
+        display: block;
+        flex: 0 0 6rem;
+        color: var(--text-muted, #66758a);
+        font-size: .75rem;
+        font-weight: 700;
+    }
+    .ea .responsive-data-table tbody td a { overflow-wrap: anywhere; }
+}
