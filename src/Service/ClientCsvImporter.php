@@ -117,6 +117,7 @@ final class ClientCsvImporter
 
             $added = 0;
             $duplicates = 0;
+            $batch = [];
             foreach ($prepared as $data) {
                 $identity = $this->identityKey($data['name'], $data['email']);
                 $codialKey = mb_strtolower($data['codial']);
@@ -133,6 +134,7 @@ final class ClientCsvImporter
                     ->setContactLastName($data['lastName'])
                     ->setContactRole($data['role']);
                 $em->persist($client);
+                $batch[] = $client;
                 $existingIdentities[$identity] = true;
                 if ($codialKey !== '') {
                     $existingCodes[$codialKey] = true;
@@ -140,7 +142,12 @@ final class ClientCsvImporter
 
                 if (++$added % self::BATCH_SIZE === 0) {
                     $em->flush();
-                    $em->clear();
+                    // Only detach imported clients. Never clear the authenticated
+                    // user or another entity managed during the admin request.
+                    foreach ($batch as $inserted) {
+                        $em->detach($inserted);
+                    }
+                    $batch = [];
                 }
             }
 

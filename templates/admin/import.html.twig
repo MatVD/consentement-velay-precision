@@ -1,4 +1,6 @@
 {% extends '@EasyAdmin/page/content.html.twig' %}
+{# Render the structured import report ourselves, before EasyAdmin consumes flash messages. #}
+{% block flash_messages %}{% endblock %}
 {% block content_title %}Importer des clients (CSV){% endblock %}
 {% block main %}
   {% for result in app.flashes('import_result') %}

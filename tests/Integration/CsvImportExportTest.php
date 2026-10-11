@@ -132,7 +132,7 @@ final class CsvImportExportTest extends TestCase
         $this->em->persist($safe);
         $this->em->flush();
 
-        $response = (new CsvController())->export($this->em);
+        $response = (new CsvController(new ClientCsvImporter($this->em)))->export($this->em);
         ob_start();
         $response->sendContent();
         $body = ob_get_clean();

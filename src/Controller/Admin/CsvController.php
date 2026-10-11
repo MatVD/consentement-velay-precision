@@ -14,6 +14,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class CsvController extends AbstractController
 {
+    public function __construct(private readonly ClientCsvImporter $importer) {}
+
     #[Route('/admin/export.csv', name: 'admin_clients_export', methods: ['GET'])]
     public function export(EntityManagerInterface $em): StreamedResponse
     {
@@ -58,7 +60,7 @@ final class CsvController extends AbstractController
     }
 
     #[AdminRoute(path: '/import', name: 'clients_import', options: ['methods' => ['GET', 'POST']])]
-    public function import(Request $request, ClientCsvImporter $importer): Response
+    public function import(Request $request): Response
     {
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('import_clients', (string) $request->request->get('_token'))) {
@@ -74,7 +76,7 @@ final class CsvController extends AbstractController
             }
 
             try {
-                $report = $importer->import($file->getPathname());
+                $report = $this->importer->import($file->getPathname());
                 $this->addFlash('import_result', $report->toArray());
             } catch (\InvalidArgumentException $exception) {
                 $this->addFlash('danger', $exception->getMessage());
