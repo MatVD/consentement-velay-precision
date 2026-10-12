@@ -11,11 +11,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class CsvController extends AbstractController
 {
     public function __construct(private readonly ClientCsvImporter $importer) {}
 
+    #[IsGranted('ROLE_ADMIN')]
     #[Route('/admin/export.csv', name: 'admin_clients_export', methods: ['GET'])]
     public function export(EntityManagerInterface $em): StreamedResponse
     {
@@ -59,6 +61,7 @@ final class CsvController extends AbstractController
         return $response;
     }
 
+    #[IsGranted('ROLE_ADMIN')]
     #[AdminRoute(path: '/import', name: 'clients_import', options: ['methods' => ['GET', 'POST']])]
     public function import(Request $request): Response
     {

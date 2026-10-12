@@ -25,8 +25,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserIdentifier(): string { return $this->email; }
     public function getEmail(): string { return $this->email; }
     public function setEmail(string $email): self { $this->email = mb_strtolower(trim($email)); return $this; }
-    public function getRoles(): array { return array_values(array_unique([...$this->roles, 'ROLE_ADMIN'])); }
-    public function setRoles(array $roles): self { $this->roles = $roles; return $this; }
+    public function getRoles(): array
+    {
+        // Existing accounts keep ROLE_ADMIN from the persisted default; do not
+        // silently elevate newly provisioned operators or auditors.
+        return array_values(array_unique([...$this->roles, 'ROLE_USER']));
+    }
+
+    public function setRoles(array $roles): self
+    {
+        if ($roles === [] || array_diff($roles, ['ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_AUDITOR']) !== []) {
+            throw new \InvalidArgumentException('Rôle utilisateur non reconnu.');
+        }
+        $this->roles = array_values(array_unique($roles));
+        return $this;
+    }
     public function getPassword(): ?string { return $this->password; }
     public function setPassword(string $password): self { $this->password = $password; return $this; }
     public function eraseCredentials(): void {}

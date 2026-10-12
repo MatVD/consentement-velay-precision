@@ -79,6 +79,8 @@ final class ClientCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, $follow)
             ->add(Crud::PAGE_DETAIL, $follow)
             ->update(Crud::PAGE_INDEX, Action::NEW, static fn (Action $action): Action => $action->setLabel('Ajouter un client'))
+            ->setPermission(Action::NEW, 'ROLE_OPERATOR')
+            ->setPermission(Action::EDIT, 'ROLE_OPERATOR')
             ->disable(Action::DELETE);
     }
 }

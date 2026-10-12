@@ -1,0 +1,4 @@
+framework:
+    session:
+        # Deployment requires HTTPS; never send the administration session over HTTP.
+        cookie_secure: true

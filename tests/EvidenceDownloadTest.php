@@ -7,6 +7,7 @@ use App\Entity\ConsentDecision;
 use App\Entity\ConsentRequest;
 use App\Entity\EvidenceFile;
 use App\Service\EvidenceArchive;
+use App\Service\EvidenceDownloadAuditor;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -37,7 +38,8 @@ final class EvidenceDownloadTest extends TestCase
         file_put_contents($this->directory.'/receipt.pdf', $pdf);
         $response = (new ClientActionsController())->download(
             $this->file('receipt.pdf', hash('sha256', $pdf)),
-            $this->archive()
+            $this->archive(),
+            $this->createMock(EvidenceDownloadAuditor::class)
         );
 
         self::assertInstanceOf(BinaryFileResponse::class, $response);
@@ -53,7 +55,8 @@ final class EvidenceDownloadTest extends TestCase
 
         (new ClientActionsController())->download(
             $this->file('receipt.pdf', hash('sha256', "%PDF-1.4\nOriginal\n")),
-            $this->archive()
+            $this->archive(),
+            $this->createMock(EvidenceDownloadAuditor::class)
         );
     }
 
@@ -62,7 +65,8 @@ final class EvidenceDownloadTest extends TestCase
         $this->expectException(NotFoundHttpException::class);
         (new ClientActionsController())->download(
             $this->file('missing.pdf', str_repeat('a', 64)),
-            $this->archive()
+            $this->archive(),
+            $this->createMock(EvidenceDownloadAuditor::class)
         );
     }
 

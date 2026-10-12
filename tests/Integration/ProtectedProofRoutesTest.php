@@ -1,6 +1,7 @@
 <?php
 namespace App\Tests\Integration;
 
+use App\Entity\AuditEvent;
 use App\Entity\Client;
 use App\Entity\ConsentDecision;
 use App\Entity\ConsentRequest;
@@ -123,10 +124,14 @@ final class ProtectedProofRoutesTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('attachment;', $browser->getResponse()->headers->get('Content-Disposition'));
         self::assertStringContainsString('no-store', $browser->getResponse()->headers->get('Cache-Control'));
+        $reads = $em->getRepository(AuditEvent::class)->findBy(['type' => 'evidence_downloaded']);
+        self::assertCount(1, $reads);
+        self::assertSame($evidence->getId(), $reads[0]->getDetails()['evidence_id']);
 
         file_put_contents($this->tempEvidenceDirectory.'/'.$name, "%PDF-1.4\nAltered\n");
         $browser->request('GET', $route);
         self::assertResponseStatusCodeSame(404);
+        self::assertCount(1, $em->getRepository(AuditEvent::class)->findBy(['type' => 'evidence_downloaded']));
     }
 
     private function authenticate(\Symfony\Bundle\FrameworkBundle\KernelBrowser $browser): void

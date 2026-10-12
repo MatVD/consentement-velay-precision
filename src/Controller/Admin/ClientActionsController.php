@@ -11,6 +11,7 @@ use App\Service\ConsentPolicy;
 use App\Service\ConsentPrefill;
 use App\Service\ConsentRecorder;
 use App\Service\EvidenceArchive;
+use App\Service\EvidenceDownloadAuditor;
 use App\Service\InvitationService;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
@@ -21,10 +22,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints\IsTrue;
 
 final class ClientActionsController extends AbstractController
 {
+    #[IsGranted('ROLE_AUDITOR')]
     #[AdminRoute(path: '/clients/{id}/actions', name: 'client_actions', options: ['requirements' => ['id' => '\\d+'], 'methods' => ['GET']])]
     public function actions(Client $client, EntityManagerInterface $em): Response
     {
@@ -40,6 +43,7 @@ final class ClientActionsController extends AbstractController
         ], new Response(headers: ['Cache-Control' => 'private, no-store']));
     }
 
+    #[IsGranted('ROLE_OPERATOR')]
     #[Route('/admin/clients/{id}/email', name: 'admin_client_send_email', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function sendEmail(Client $client, Request $request, InvitationService $inviter): Response
     {
@@ -55,6 +59,7 @@ final class ClientActionsController extends AbstractController
         return $this->redirectToRoute('admin_client_index');
     }
 
+    #[IsGranted('ROLE_OPERATOR')]
     #[Route('/admin/clients/{id}/onsite', name: 'admin_client_onsite', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function onsite(Client $client, Request $request, InvitationService $inviter): Response
     {
@@ -70,6 +75,7 @@ final class ClientActionsController extends AbstractController
         return $this->redirectToRoute('admin_client_actions', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
     }
 
+    #[IsGranted('ROLE_OPERATOR')]
     #[AdminRoute(path: '/clients/{id}/assisted', name: 'client_assisted', options: ['requirements' => ['id' => '\\d+'], 'methods' => ['GET', 'POST']])]
     public function assisted(Client $client, Request $request): Response
     {
@@ -113,6 +119,7 @@ final class ClientActionsController extends AbstractController
         ], new Response(headers: ['Cache-Control' => 'private, no-store']));
     }
 
+    #[IsGranted('ROLE_OPERATOR')]
     #[AdminRoute(path: '/clients/{id}/assisted/confirm', name: 'client_assisted_confirm', options: ['requirements' => ['id' => '\\d+'], 'methods' => ['GET', 'POST']])]
     public function confirmAssisted(Client $client, Request $request, ConsentRecorder $recorder): Response
     {
@@ -186,13 +193,17 @@ final class ClientActionsController extends AbstractController
         return 'assisted_consent_draft_'.$client->getId();
     }
 
+    #[IsGranted('ROLE_AUDITOR')]
     #[Route('/admin/proofs/{id}/download', name: 'admin_proof_download', requirements: ['id' => '\\d+'], methods: ['GET'])]
-    public function download(EvidenceFile $file, EvidenceArchive $archive): Response
+    public function download(EvidenceFile $file, EvidenceArchive $archive, EvidenceDownloadAuditor $auditor): Response
     {
         $path = $archive->absolutePath($file);
         if (!is_file($path) || !hash_equals($file->getSha256(), (string) hash_file('sha256', $path))) {
             throw $this->createNotFoundException('Justificatif absent ou altéré.');
         }
+        // Record who accessed which proof without duplicating personal data.
+        // A failed audit fails closed and prevents delivery.
+        $auditor->record($file);
         $response = new BinaryFileResponse($path);
         $response->headers->set('Cache-Control', 'private, no-store');
         $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'decision-'.$file->getDecision()->getId().'.pdf');
