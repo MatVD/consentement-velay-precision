@@ -217,3 +217,5 @@ docker compose -f compose.yaml -f compose.dev.yaml exec -T app php bin/console d
 **Arbitrages bloquants avant mise en production :** texte et notice RGPD approuvés, responsable de traitement et point de contact établis, durées de conservation motivées, affectation des rôles validée, stockage de sauvegarde externe et secret sécurisé choisis, restauration chiffrée testée intégralement en environnement autorisé. Aucune de ces décisions n'est imposée par le code.
 
 **Statut :** implémentation technique livrée sur `main`, **validation juridique et opérationnelle incomplète**. Arrêt après phase 3 dans l'attente de l'avis utilisateur. Les phases 4 et 5 ne sont pas démarrées.
+
+**Complément du 12 octobre 2026 :** fin de contrat saisie manuellement, archive nominative 1 an, archive anonymisée réservée aux administrateurs 2 ans, puis suppression : décisions métier enregistrées dans `docs/CYCLE_VIE_CLIENTS.md`. La clôture manuelle et l'historique général sont implémentés et testés sur `main`. L'anonymisation et la suppression restent **désactivées** jusqu'à clarification des informations conservées et validation des obligations légales.

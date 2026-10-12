@@ -50,6 +50,16 @@ Autres valeurs admises : `admin` et `auditor`. La décision de qui reçoit quel 
 
 **Limites explicites :** pas de 2FA intégrée, pas de système de révocation centralisé des sessions, pas de signature/scellement externe des journaux, pas de Content-Security-Policy stricte validée pour EasyAdmin (qui contient du JavaScript et des styles inline), pas de politique de supervision encore déployée. Ces décisions sont à compléter avant la production.
 
+## 3 bis. Cycle de vie des dossiers (décisions du 12 octobre 2026)
+
+L'entreprise indique manuellement la fin contractuelle. Pendant **1 an** à compter de cette date, le dossier reste en archive normale, avec les données et justificatifs historiques. Le projet prévoit ensuite **2 ans d'archive anonymisée limitée à l'administrateur**, puis une suppression complète. La signature papier sera proposée aux clients ayant refusé le recours à la signature électronique.
+
+**Mise en œuvre actuelle :** la clôture, la conservation nominative d'une première archive, la restriction de la création de nouveaux liens et un historique général non nominatif sont implémentés. **La destruction/anonymisation n'est pas implémentée ni activée** tant que les données à conserver ne sont pas définies ; l'historique futur « Client anonymisé / Client supprimé » ne sera renseigné qu'après exécution réelle.
+
+Le journal général ne contient ni nom, ni email, ni référence Codial, ni ID client ; la fiche individuelle contient temporairement une trace « Client archivé » **à supprimer au moment de l'anonymisation**. La possibilité de réidentification par recoupement reste à évaluer.
+
+**Décision juridique à confirmer :** les délais de conservation de la preuve et leur justification, ainsi que le caractère réellement irréversible de l'anonymisation. Les deux possibilités (statistiques agrégées versus dossiers pseudonymisés) sont présentées dans `docs/CYCLE_VIE_CLIENTS.md`.
+
 ## 4. Gouvernance RGPD — décisions non prises par le code
 
 **À arbitrer et faire valider formellement :**

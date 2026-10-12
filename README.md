@@ -7,7 +7,7 @@ Application autonome de recueil d'un accord **déclaratif** sur le recours à la
 - Formulaire public via un **lien individuel non devinable**, sans connexion ni email de confirmation.
 - Identité et qualité **déclarées** du répondant, choix **Oui / Non**, date serveur et version exacte du texte.
 - Administration protégée par identifiant/mot de passe avec **EasyAdmin 5**, rôles différenciés `admin`, `operator` et `auditor` (accès et actions contrôlés côté serveur).
-- Clients, consultation des preuves, statuts **À faire / Mail envoyé / Oui / Non**.
+- Clients, consultation des preuves, statuts **À faire / Mail envoyé / Oui / Non**, et état du dossier **Actif / Archivé**.
 - **Représentant facultatif** renseigné séparément de la raison sociale ; son prénom, son nom et sa fonction préremplissent tous les formulaires (lien mail, lien présentiel, saisie accompagnée) mais restent modifiables. Aucun nom de personne n’est déduit de la raison sociale.
 - Envoi de l'**invitation initiale** par email depuis EasyAdmin (SMTP requis), ou génération d'un lien pour une visite technicien.
 - Export **CSV UTF-8** progressif en trois colonnes « Identité », « Date », « Statut » ; import CSV validé en lots avec bilan des rejets et doublons.
@@ -95,9 +95,15 @@ Menu **Exporter le CSV** : colonnes `Identité;Date;Statut`. La date correspond 
 | Oui | Réponse Oui validée sur le formulaire, récépissé archivé |
 | Non | Réponse Non validée sur le formulaire, récépissé archivé |
 
-La décision est **finale pour cette V1**. Toute révision du choix nécessite un nouveau processus métier à développer ultérieurement, pour ne pas écraser les réponses précédentes.
+La décision est **finale pour cette V1**. Toute révision du choix nécessite un nouveau processus métier à développer ultérieurement, pour ne pas écraser les réponses précédentes. **En cas de refus**, Velay Précision proposera une **signature manuscrite sur papier** ; le texte du formulaire est versionné (`2026-10-12-v2`) et les anciens justificatifs conservent leur version originale.
 
 Le lien est expiré après 14 jours s'il est envoyé par mail, ou 24 heures s'il est généré en présentiel. Le jeton brut n'est jamais stocké dans la base : seul son SHA-256 est conservé. La soumission du formulaire est protégée contre les relectures concurrentes et les doubles validations.
+
+### Fin de relation et archivage
+
+Un administrateur peut ouvrir la **fiche client**, saisir la **date de fin de relation contractuelle**, puis utiliser « Clôturer et archiver ». Le client passe immédiatement dans l'état **Archivé** et devient non modifiable ; ses éventuels anciens liens ne permettent plus de répondre. Les décisions Oui/Non et PDF restent inchangés. La liste Clients peut être filtrée selon l'état du dossier.
+
+Le menu **Historique des archives** montre à tous les collaborateurs autorisés les changements de cycle de vie sans exposer le nom ou l'identifiant du client. Le cycle cible métier est : **1 an d'archive normale, puis 2 ans d'archive anonymisée réservée aux administrateurs, puis suppression**. **À ce stade seule la clôture manuelle et l'archive normale sont implémentées** ; aucune anonymisation ou purge automatique n'est active. Voir `docs/CYCLE_VIE_CLIENTS.md` pour l'arbitrage indispensable sur ce qu'il faut réellement conserver pendant les deux années suivantes et l'analyse RGPD.
 
 ## Mise en production (avant de lancer les premiers vrais envois)
 
