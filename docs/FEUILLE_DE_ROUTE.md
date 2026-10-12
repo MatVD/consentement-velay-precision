@@ -41,7 +41,7 @@
 
 **Critères de fin de phase :** imports et exports vérifiés sur des fixtures ; pas de confusion entre client et représentant ; UI française et recette responsive validée.
 
-**État :** implémentée et testée sur `feat/roadmap-phase-2-data-ux` (11 octobre 2026). En attente d'avis utilisateur ; recette visuelle sur appareils réels encore à faire.
+**État :** validée pour fusion dans `main` le 12 octobre 2026, après nouveaux tests automatisés ; la recette visuelle sur appareils réels reste explicitement à compléter.
 
 ## Phase 3 — Sécurité, conformité et gouvernance
 
@@ -84,7 +84,7 @@
 | Phase | Branche | État | Tests | Validation utilisateur |
 | --- | --- | --- | --- | --- |
 | 1 | `feat/roadmap-phase-1-stabilisation` | Implémentée et testée | 23 tests / 90 assertions, contrôles Symfony et Doctrine OK | Poursuite phase 2 autorisée |
-| 2 | `feat/roadmap-phase-2-data-ux` | Implémentée et testée | 33 tests / 172 assertions, Twig/YAML/Doctrine/Compose OK | En attente |
+| 2 | `feat/roadmap-phase-2-data-ux` | Validée pour fusion | 38 tests / 230 assertions, Twig/YAML/Doctrine/Compose/JS OK | Fusion dans `main` demandée le 12/10/2026 |
 | 3 | À définir | En attente | — | — |
 | 4 | À définir | En attente | — | — |
 | 5 | À définir | En attente | — | — |
@@ -183,4 +183,4 @@ docker compose -f compose.yaml -f compose.dev.yaml exec -T app php bin/console d
 - Inspection HTML en Brave : index Clients, nouveau client, modification, suivi / preuves, import CSV, accueil et confirmation ; ouverture du filtre vérifiée.
 - Le formulaire public et le cas d'un lien invalide sont également couverts par des tests HTTP.
 
-**Limites et contrôle utilisateur restant :** les outils navigateur disponibles permettent la navigation et l'inspection du DOM, mais **pas un contrôle visuel effectif à toutes les largeurs d'écran**. La checklist des tailles **320 / 375 / 390 / 768 / 1024 / 1440 px** et des parcours est consignée dans `docs/RESPONSIVE_QA.md`. La fusion dans `main` et le lancement de la phase 3 attendent toujours le feu vert utilisateur.
+**Limites et contrôle utilisateur restant :** les outils navigateur disponibles permettent la navigation et l'inspection du DOM, mais **pas un contrôle visuel effectif à toutes les largeurs d'écran**. La checklist des tailles **320 / 375 / 390 / 768 / 1024 / 1440 px** et des parcours est consignée dans `docs/RESPONSIVE_QA.md`. La fusion dans `main` a été expressément demandée le 12 octobre 2026 ; le lancement de la phase 3 reste soumis à une instruction distincte.
