@@ -16,11 +16,11 @@
     <fieldset class="choice-area">
       <legend>Votre décision</legend>
       {{ form_errors(form.choice) }}
-      <div class="choice-options">
+      <div class="choice-cards">
         {% for option in form.choice %}
-          <label class="choice-option">
+          <label class="choice-card">
             {{ form_widget(option) }}
-            <span>{{ option.vars.label }}</span>
+            <span class="choice-card__label">{{ option.vars.label }}</span>
           </label>
         {% endfor %}
       </div>

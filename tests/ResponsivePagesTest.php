@@ -28,6 +28,21 @@ final class ResponsivePagesTest extends WebTestCase
         self::assertSelectorExists('link[rel="stylesheet"][href$="/assets/app.css"]');
     }
 
+    public function testConsentDecisionCardsUseTwoDesktopColumnsAndOneMobileColumn(): void
+    {
+        $css = file_get_contents(dirname(__DIR__).'/public/assets/app.css');
+        self::assertIsString($css);
+        self::assertMatchesRegularExpression(
+            '~\\.choice-cards\\s*\\{\\s*display:\\s*grid;\\s*grid-template-columns:\\s*minmax\\(0, 1fr\\);~',
+            $css
+        );
+        self::assertStringContainsString('@media (min-width: 640px)', $css);
+        self::assertStringContainsString('.choice-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }', $css);
+        self::assertStringContainsString('.choice-area .choice-card { min-height: 180px; }', $css);
+        self::assertStringContainsString(".choice-card:has(input[type='radio']:checked)", $css);
+        self::assertStringContainsString(".choice-card:has(input[type='radio']:focus-visible)", $css);
+    }
+
     public static function publicPages(): iterable
     {
         yield 'accueil' => ['/'];

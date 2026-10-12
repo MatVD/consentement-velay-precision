@@ -108,7 +108,7 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertCount(1, $crawler->filter('input[name="consent[signatoryRole]"][value="Gérante"]'));
         self::assertCount(0, $crawler->filter('input[name="consent[choice]"]:checked'));
         self::assertSame('Votre décision', trim($crawler->filter('fieldset.choice-area legend')->text()));
-        self::assertCount(2, $crawler->filter('.choice-area label.choice-option > input[type="radio"] + span'));
+        self::assertCount(2, $crawler->filter('.choice-cards label.choice-card > input[type="radio"] + span.choice-card__label'));
         self::assertCount(2, $crawler->filter('.choice-area label'));
         self::assertStringContainsString('Votre choix concernant la signature électronique', $crawler->text());
         self::assertStringNotContainsString('Texte présenté au client', $crawler->text());
@@ -309,10 +309,10 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertCount(1, $crawler->filter('.consent-card .field-grid'));
         self::assertCount(1, $crawler->filter('fieldset.choice-area'));
         self::assertSame('Votre décision', trim($crawler->filter('.choice-area legend')->text()));
-        self::assertCount(2, $crawler->filter('.choice-area label.choice-option > input[type="radio"] + span'));
+        self::assertCount(2, $crawler->filter('.choice-cards label.choice-card > input[type="radio"] + span.choice-card__label'));
         self::assertSame(
             ['Oui, j’accepte', 'Non, je refuse'],
-            $crawler->filter('.choice-area label.choice-option')->each(static fn ($node): string => trim($node->text()))
+            $crawler->filter('.choice-cards label.choice-card')->each(static fn ($node): string => trim($node->text()))
         );
         self::assertCount(2, $crawler->filter('.choice-area input[type="radio"]'));
     }
