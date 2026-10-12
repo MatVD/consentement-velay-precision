@@ -392,6 +392,34 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertCount(2, $crawler->filter('.choice-area input[type="radio"]'));
     }
 
+    public function testPublicSubmissionWithoutCsrfCannotCreateDecision(): void
+    {
+        $browser = static::createClient();
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        $client = (new Client())->setName('Client de recette CSRF');
+        $em->persist($client);
+        $em->flush();
+
+        $token = bin2hex(random_bytes(32));
+        $invitation = new ConsentRequest(
+            $client, hash('sha256', $token), 'onsite', new \DateTimeImmutable('+1 day')
+        );
+        $em->persist($invitation);
+        $em->flush();
+
+        $browser->request('POST', '/c/'.$token, [
+            'consent' => [
+                'firstName' => 'Anne', 'lastName' => 'Martin',
+                'signatoryRole' => 'Gérante', 'choice' => 'yes',
+                // Deliberately missing consent[_token].
+            ],
+        ]);
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame(0, $em->getRepository(\App\Entity\ConsentDecision::class)->count([]));
+        $em->refresh($client);
+        self::assertSame(Client::TODO, $client->getStatus());
+    }
+
     private function browserWithAdmin(): KernelBrowser
     {
         $browser = static::createClient();

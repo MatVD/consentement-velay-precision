@@ -35,6 +35,7 @@
     {% endfor %}
   {% endfor %}
 
+  {% if is_granted('ROLE_OPERATOR') %}
   <section class="card mb-4" aria-labelledby="client-invitation-heading">
     <div class="card-body">
       <h2 id="client-invitation-heading" class="h5">Lien individuel pour le client</h2>
@@ -50,6 +51,7 @@
       {% endif %}
     </div>
   </section>
+  {% endif %}
 
   <p><strong>Statut :</strong> {{ client.statusLabel }} · <strong>Email :</strong> {{ client.email ?: 'Non renseigné' }}</p>
   <p><strong>Référence Codial :</strong> {{ client.codialId ?: '—' }}</p>
@@ -79,7 +81,8 @@
     'link_created': 'Lien créé',
     'email_sent': 'Invitation envoyée',
     'email_failed': 'Échec de l’envoi',
-    'decision_recorded': 'Décision enregistrée'
+    'decision_recorded': 'Décision enregistrée',
+    'evidence_downloaded': 'Justificatif téléchargé'
   } %}
   {% set actor_labels = {'admin': 'Collaborateur', 'client': 'Client', 'system': 'Système'} %}
   {% if events is empty %}<p>Pas d'événements.</p>{% else %}

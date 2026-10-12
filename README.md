@@ -6,12 +6,12 @@ Application autonome de recueil d'un accord **déclaratif** sur le recours à la
 
 - Formulaire public via un **lien individuel non devinable**, sans connexion ni email de confirmation.
 - Identité et qualité **déclarées** du répondant, choix **Oui / Non**, date serveur et version exacte du texte.
-- Administration protégée par identifiant/mot de passe avec **EasyAdmin 5**.
+- Administration protégée par identifiant/mot de passe avec **EasyAdmin 5**, rôles différenciés `admin`, `operator` et `auditor` (accès et actions contrôlés côté serveur).
 - Clients, consultation des preuves, statuts **À faire / Mail envoyé / Oui / Non**.
 - **Représentant facultatif** renseigné séparément de la raison sociale ; son prénom, son nom et sa fonction préremplissent tous les formulaires (lien mail, lien présentiel, saisie accompagnée) mais restent modifiables. Aucun nom de personne n’est déduit de la raison sociale.
 - Envoi de l'**invitation initiale** par email depuis EasyAdmin (SMTP requis), ou génération d'un lien pour une visite technicien.
 - Export **CSV UTF-8** progressif en trois colonnes « Identité », « Date », « Statut » ; import CSV validé en lots avec bilan des rejets et doublons.
-- Récépissé PDF **non certifié** archivé dans un volume Docker privé, empreinte SHA-256 et journal d'événements.
+- Récépissé PDF **non certifié** archivé dans un volume Docker privé, empreinte SHA-256 et journal d'événements, dont les téléchargements sont désormais tracés par identifiant utilisateur.
 - Connecteur Codial : **non implémenté**, champ facultatif `codial_id` réservé.
 
 ## Technologies
@@ -68,7 +68,7 @@ Docker Engine / Docker Desktop et le plugin `docker compose` fonctionnel ; accè
    - Administration : http://localhost:8081/admin
    - Emails de test (Mailpit) : http://localhost:8025
 
-7. Dans EasyAdmin (interface en français), ajouter un client : renseigner l'**entreprise / client**, l'email d'invitation et, si disponibles, le prénom, le nom et la fonction de son représentant. Utiliser les icônes **enveloppe** (envoi email), **lien** (présentiel) ou **accompagnement** (formulaire rempli avec le client) dans la liste **Clients**. Les info-bulles explicitent les actions. Le lien présentiel valable 24 heures s'affiche en haut de la liste. Le menu **Suivi / preuves** permet de consulter les décisions et les justificatifs.
+7. Dans EasyAdmin (interface en français), ajouter un client : renseigner l'**entreprise / client**, l'email d'invitation et, si disponibles, le prénom, le nom et la fonction de son représentant. Depuis la liste **Clients**, utiliser les icônes **Email** ou **Accompagner**. La génération de **lien individuel** est disponible dans la **fiche client** (menu d'actions « ... »), avec copie du lien valable 24 heures. Les permissions affichées dépendent du rôle : l'auditeur peut consulter sans modifier.
 
 ### Import CSV
 
@@ -133,25 +133,20 @@ FrankenPHP/Caddy gère directement HTTPS si le DNS pointe vers ce serveur et que
 
 **La base et les PDF sont deux ensembles distincts : les sauvegarder ensemble.** Ne pas effectuer `docker compose down -v` sous peine de supprimer leurs volumes !
 
-Exemple d'export PostgreSQL (à stocker sur support chiffré) :
-
-```bash
-mkdir -p backups
-docker compose -f compose.yaml -f compose.prod.yaml exec -T database pg_dump -U velay -d velay -Fc > backups/velay.dump
-```
-
-Effectuer une copie du volume Docker `evidence_data` à l'aide d'un conteneur temporaire, en conservant les droits et l'arborescence. Tester une restauration sur un environnement isolé. Une stratégie automatisée, chiffrée et externalisée est requise en production.
+L'outil `scripts/backup.py` produit un ensemble **PostgreSQL + justificatifs**, chiffré avec libsodium ; il permet la vérification cryptographique et un test de restauration dans une base éphémère. La destination externalisée, les clés et la planification d'exploitation **ne sont pas encore configurées**. Voir **`docs/SAUVEGARDES.md`** avant toute utilisation. Ne jamais créer de sauvegarde en clair dans le dépôt.
 
 ## Sécurité, RGPD et valeur probante
 
 - Il n'y a **aucune vérification forte d'identité** : l'identité, la qualité du signataire et le contrôle du lien sont déclaratifs. Un lien individuel ne garantit pas que la bonne personne l'a ouvert.
 - Le PDF est un **récépissé**, non une signature cryptographique de la personne. Ne pas le présenter comme signature électronique qualifiée.
 - L'application conserve une version du texte, une date UTC, des journaux, l'IP et l'agent utilisateur (données à traiter conformément au RGPD). Définir et appliquer une politique de conservation et de purge après validation juridique.
-- Les fichiers PDF sont stockés hors de `/public`; leur téléchargement est limité aux comptes administrateurs et contrôlé par SHA-256.
-- Compte administrateur : mot de passe haché, protection CSRF, limitation des tentatives.
+- Les fichiers PDF sont stockés hors de `/public` ; leur téléchargement est réservé aux rôles autorisés, contrôlé par SHA-256 et **journalisé**.
+- Comptes nominatifs : `ROLE_ADMIN` (toutes les opérations), `ROLE_OPERATOR` (actions client sans import/export global), `ROLE_AUDITOR` (consultation), mot de passe haché, CSRF et limitation des tentatives.
+- Les pages sensibles envoient `Cache-Control: private, no-store` et `Referrer-Policy: no-referrer`, afin de limiter notamment les risques de diffusion des liens d'invitation. Le cookie de session est `Secure` en environnement `prod`.
 - L'export CSV et les détails des réponses ne doivent jamais être accessibles anonymement.
 - Sans système externe d'horodatage, ni stockage WORM, un administrateur système disposant d'un accès complet au serveur peut théoriquement altérer les données et les justificatifs. Les preuves sont **techniques et non certifiées**.
-- Définir un responsable du traitement, l'information des personnes, la durée de conservation, les accès et le contrat SMTP/hébergement avant production.
+- Définir un responsable du traitement, l'information des personnes, la durée de conservation, les accès et le contrat SMTP/hébergement avant production. **Ces validations restent à obtenir**. Les données ne sont pas purgées automatiquement ; la commande de lecture seule `app:privacy:inventory` fournit des comptages.
+- Voir **`docs/GOUVERNANCE_SECURITE.md`** pour la cartographie des données, les droits d'accès, les décisions RGPD en attente et les limites probatoires.
 
 ## Développement et vérifications
 

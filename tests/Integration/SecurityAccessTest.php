@@ -75,8 +75,11 @@ final class SecurityAccessTest extends WebTestCase
 
         $browser->request('GET', '/admin/client');
         self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('td[data-column="quickActions"]', 'Consultation seule');
+        self::assertSelectorNotExists('td[data-column="quickActions"] form[action$="/email"]');
         $browser->request('GET', '/admin/clients/'.$client->getId().'/actions');
         self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('form[action$="/onsite"]');
 
         foreach ([
             '/admin/client/new',
@@ -124,6 +127,37 @@ final class SecurityAccessTest extends WebTestCase
         self::assertResponseIsSuccessful();
         $browser->request('GET', '/admin/import');
         self::assertResponseIsSuccessful();
+    }
+
+    public function testPrivacyInventoryOnlyCountsAndNeverMutates(): void
+    {
+        static::createClient();
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        $em->persist((new Client())->setName('Client fictif de recette'));
+        $em->flush();
+        $before = $em->getRepository(Client::class)->count([]);
+
+        $application = new \Symfony\Bundle\FrameworkBundle\Console\Application(static::$kernel);
+        $application->setAutoExit(false);
+        $tester = new \Symfony\Component\Console\Tester\CommandTester($application->find('app:privacy:inventory'));
+        self::assertSame(0, $tester->execute(['--older-than-days' => '90']));
+        self::assertStringContainsString('Clients : '.$before, $tester->getDisplay());
+        self::assertStringContainsString('aucune donnée effacée', $tester->getDisplay());
+        self::assertSame($before, $em->getRepository(Client::class)->count([]));
+    }
+
+    public function testAccountProvisioningRefusesUnrecognizedRole(): void
+    {
+        static::createClient();
+        $application = new \Symfony\Bundle\FrameworkBundle\Console\Application(static::$kernel);
+        $application->setAutoExit(false);
+        $tester = new \Symfony\Component\Console\Tester\CommandTester($application->find('app:create-user'));
+        self::assertSame(
+            \Symfony\Component\Console\Command\Command::INVALID,
+            $tester->execute(['email' => 'collaborateur@example.test', '--role' => 'superadmin'])
+        );
+        self::assertSame(0, static::getContainer()->get('doctrine.orm.entity_manager')
+            ->getRepository(User::class)->count([]));
     }
 
     private function saveUser(EntityManager $em, string $email, array $roles): User

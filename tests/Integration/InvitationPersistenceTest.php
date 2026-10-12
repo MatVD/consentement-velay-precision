@@ -180,6 +180,63 @@ final class InvitationPersistenceTest extends TestCase
         }
     }
 
+    public function testExpiredPublicTokenCannotRecordDecision(): void
+    {
+        $client = (new Client())->setName('Client fictif expiré');
+        $this->first->persist($client);
+        $this->first->flush();
+
+        $token = bin2hex(random_bytes(32));
+        $invitation = new ConsentRequest($client, hash('sha256', $token), 'email', new \DateTimeImmutable('-1 day'));
+        $this->first->persist($invitation);
+        $this->first->flush();
+
+        $submission = new ConsentSubmission();
+        $submission->firstName = 'Anne';
+        $submission->lastName = 'Martin';
+        $submission->signatoryRole = 'Gérante';
+        $submission->choice = 'yes';
+        $recorder = new ConsentRecorder(
+            $this->first,
+            new EvidenceArchive(new Environment(new FilesystemLoader(dirname(__DIR__, 2).'/templates')), $this->receiptsDirectory)
+        );
+        try {
+            $recorder->record($token, $submission, Request::create('/c/'.$token));
+            self::fail('Le lien expiré doit être refusé.');
+        } catch (\DomainException $exception) {
+            self::assertStringContainsString('disponible', $exception->getMessage());
+        }
+        self::assertCount(0, $this->second->getRepository(ConsentDecision::class)->findAll());
+    }
+
+    public function testUntrustedForwardedIpIsNotRecordedAsClientAddress(): void
+    {
+        $client = (new Client())->setName('Client de recette réseau');
+        $this->first->persist($client);
+        $this->first->flush();
+        [$invitation, $link] = (new InvitationService(
+            $this->first, $this->createMock(MailerInterface::class),
+            'https://consentement.example.test', 'contact@example.test'
+        ))->create($client, 'onsite');
+        $token = substr($link, strrpos($link, '/') + 1);
+
+        $submission = new ConsentSubmission();
+        $submission->firstName = 'Anne';
+        $submission->lastName = 'Martin';
+        $submission->signatoryRole = 'Gérante';
+        $submission->choice = 'no';
+        $http = Request::create('/c/'.$token, 'POST', [], [], [], [
+            'REMOTE_ADDR' => '203.0.113.14',
+            'HTTP_X_FORWARDED_FOR' => '198.51.100.7',
+        ]);
+        $decision = (new ConsentRecorder(
+            $this->first,
+            new EvidenceArchive(new Environment(new FilesystemLoader(dirname(__DIR__, 2).'/templates')), $this->receiptsDirectory)
+        ))->record($token, $submission, $http);
+
+        self::assertSame('203.0.113.14', $decision->getIpAddress());
+    }
+
     private function manager(): EntityManager
     {
         $config = ORMSetup::createAttributeMetadataConfig(

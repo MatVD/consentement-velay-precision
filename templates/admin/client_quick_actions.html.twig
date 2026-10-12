@@ -5,6 +5,7 @@
 {% set email_aide = decision_finale ? 'Décision déjà enregistrée' : (not client.email ? 'Adresse email manquante' : 'Envoyer le formulaire par email') %}
 {% set assistance_aide = decision_finale ? 'Décision déjà enregistrée' : 'Remplir le formulaire avec le client' %}
 
+{% if is_granted('ROLE_OPERATOR') %}
 <div class="d-inline-flex align-items-center gap-2" role="group" aria-label="Actions pour {{ client.name }}">
     <form method="post" action="{{ path('admin_client_send_email', {id: client.id}) }}" class="m-0" title="{{ email_aide }}">
         <input type="hidden" name="_token" value="{{ csrf_token('send_' ~ client.id) }}">
@@ -29,3 +30,6 @@
         </a>
     {% endif %}
 </div>
+{% else %}
+  <span class="text-muted">Consultation seule</span>
+{% endif %}
