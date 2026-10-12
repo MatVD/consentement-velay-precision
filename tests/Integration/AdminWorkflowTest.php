@@ -75,7 +75,8 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertStringContainsString('Filtres', $crawler->text());
         self::assertStringContainsString('Ajouter un client', $crawler->text());
         self::assertSelectorExists('td[data-column="quickActions"] form[action$="/email"]');
-        self::assertSelectorExists('td[data-column="quickActions"] form[action$="/onsite"]');
+        self::assertSelectorNotExists('td[data-column="quickActions"] form[action$="/onsite"]');
+        self::assertSelectorExists('td.actions a.action-suivi[href$="/actions"]');
         self::assertSelectorExists('td[data-column="quickActions"] a[href$="/assisted"]');
         self::assertSelectorExists('link[rel="stylesheet"][href$="/assets/admin.css"]');
 
@@ -107,7 +108,44 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertCount(1, $crawler->filter('input[name="consent[lastName]"][value="Martin"]'));
         self::assertCount(1, $crawler->filter('input[name="consent[signatoryRole]"][value="Gérante"]'));
         self::assertCount(0, $crawler->filter('input[name="consent[choice]"]:checked'));
-        self::assertStringContainsString('La raison sociale n\'est jamais utilisée', $crawler->text());
+        self::assertSame('Votre décision', trim($crawler->filter('fieldset.choice-area legend')->text()));
+        self::assertCount(2, $crawler->filter('.choice-cards label.choice-card > input[type="radio"] + span.choice-card__label'));
+        self::assertCount(2, $crawler->filter('.choice-area label'));
+        self::assertStringContainsString('Votre choix concernant la signature électronique', $crawler->text());
+        self::assertStringNotContainsString('Texte présenté au client', $crawler->text());
+        self::assertStringNotContainsString('2026-10-10-v1', $crawler->text());
+        self::assertStringNotContainsString('technicien', $crawler->text());
+        self::assertCount(0, $crawler->filter('input[name$="[assistedConfirmation]"]'));
+        self::assertCount(1, $crawler->filter('link[rel="stylesheet"][href$="/assets/app.css"]'));
+    }
+
+    public function testAssistedConsentRequiresSeparateTechnicianConfirmation(): void
+    {
+        $browser = $this->browserWithAdmin();
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        $client = (new Client())->setName('Commerce de démonstration');
+        $em->persist($client);
+        $em->flush();
+
+        $page = $browser->request('GET', '/admin/clients/'.$client->getId().'/assisted');
+        self::assertResponseIsSuccessful();
+        $form = $page->selectButton('Confirmer mon choix')->form([
+            'consent[firstName]' => 'Alice',
+            'consent[lastName]' => 'Martin',
+            'consent[signatoryRole]' => 'Gérante',
+            'consent[choice]' => 'yes',
+        ]);
+        $browser->submit($form);
+        self::assertResponseRedirects('/admin/clients/'.$client->getId().'/assisted/confirm');
+        self::assertSame(Client::TODO, $client->getStatus());
+
+        $confirmation = $browser->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Confirmation du technicien', $confirmation->text());
+        self::assertStringContainsString('Alice Martin', $confirmation->text());
+        self::assertStringContainsString('Oui, j’accepte', $confirmation->text());
+        self::assertCount(1, $confirmation->filter('input[type="checkbox"]'));
+        self::assertCount(0, $confirmation->filter('input[name="consent[firstName]"]'));
     }
 
     public function testImportFormShowsReportAfterPostingCsv(): void
@@ -161,7 +199,7 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertNotContains('Commerce déjà invité', $names);
     }
 
-    public function testOnsiteQuickActionCreatesOnlyAnInvitation(): void
+    public function testClientDetailCreatesOnlyAnInvitation(): void
     {
         $browser = $this->browserWithAdmin();
         $em = static::getContainer()->get('doctrine.orm.entity_manager');
@@ -171,13 +209,19 @@ final class AdminWorkflowTest extends WebTestCase
 
         $crawler = $browser->request('GET', '/admin/client');
         self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('td[data-column="quickActions"] form[action$="/onsite"]'));
+        $crawler = $browser->request('GET', '/admin/clients/'.$client->getId().'/actions');
+        self::assertResponseIsSuccessful();
         $form = $crawler->filter('form[action$="/onsite"]')->form();
         $browser->submit($form);
-        self::assertResponseRedirects('/admin/client');
+        self::assertResponseRedirects('/admin/clients/'.$client->getId().'/actions');
         $crawler = $browser->followRedirect();
 
         self::assertResponseIsSuccessful();
-        self::assertStringContainsString('Lien présentiel généré', $crawler->text());
+        self::assertStringContainsString('Lien individuel généré', $crawler->text());
+        self::assertCount(1, $crawler->filter('.client-link-flash button[data-copy-link]'));
+        self::assertCount(1, $crawler->filter('.client-link-flash input[readonly]'));
+        self::assertStringContainsString('no-store', (string) $browser->getResponse()->headers->get('Cache-Control'));
         $closeButton = $crawler->filter('.client-link-flash > button.btn-close');
         self::assertCount(1, $closeButton);
         self::assertSame('button', $closeButton->attr('type'));
@@ -206,7 +250,6 @@ final class AdminWorkflowTest extends WebTestCase
             '/admin/client',
             '/admin/client/new',
             '/admin/client/'.$client->getId().'/edit',
-            '/admin/clients/'.$client->getId().'/assisted',
             '/admin/clients/'.$client->getId().'/actions',
             '/admin/import',
         ] as $route) {
@@ -226,6 +269,10 @@ final class AdminWorkflowTest extends WebTestCase
             self::assertSame('fr', $crawler->filter('html')->attr('lang'), $route);
         }
 
+        $assisted = $browser->request('GET', '/admin/clients/'.$client->getId().'/assisted');
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $assisted->filter('link[rel="stylesheet"][href$="/assets/app.css"]'));
+
         $crawler = $browser->request('GET', '/admin/client');
         self::assertResponseIsSuccessful();
         self::assertCount(
@@ -235,10 +282,72 @@ final class AdminWorkflowTest extends WebTestCase
         );
         self::assertCount(1, $crawler->filter('tbody td[data-column="status"]'));
         self::assertCount(
-            3,
+            2,
             $crawler->filter('td[data-column="quickActions"] .client-action-label'),
-            'Les actions clients doivent porter trois vrais libellés, visibles sur mobile.'
+            'Les deux actions rapides doivent porter des libellés visibles sur mobile.'
         );
+    }
+
+    /**
+     * @dataProvider publicInvitationChannels
+     */
+    public function testPublicInvitationPrefillsEditableRepresentativeForBothChannels(string $channel): void
+    {
+        $browser = $this->browserWithAdmin();
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        $client = (new Client())->setName('Commerce de démonstration')
+            ->setEmail('contact@example.fr')
+            ->setContactFirstName('Anne')
+            ->setContactLastName('Martin')
+            ->setContactRole('Gérante');
+        $em->persist($client);
+        $em->flush();
+
+        $token = bin2hex(random_bytes(32));
+        $em->persist(new ConsentRequest(
+            $client,
+            hash('sha256', $token),
+            $channel,
+            new \DateTimeImmutable('+1 day', new \DateTimeZone('UTC'))
+        ));
+        $em->flush();
+
+        $crawler = $browser->request('GET', '/c/'.$token);
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Commerce de démonstration', $crawler->text());
+        foreach ([
+            'firstName' => 'Anne',
+            'lastName' => 'Martin',
+            'signatoryRole' => 'Gérante',
+        ] as $field => $value) {
+            $input = $crawler->filter('input[name="consent['.$field.']"]');
+            self::assertCount(1, $input);
+            self::assertSame($value, $input->attr('value'), $channel.' : '.$field);
+            self::assertNull($input->attr('readonly'), $channel.' : '.$field);
+            self::assertNull($input->attr('disabled'), $channel.' : '.$field);
+        }
+        self::assertCount(0, $crawler->filter('input[name="consent[choice]"]:checked'));
+        self::assertStringContainsString('no-store', (string) $browser->getResponse()->headers->get('Cache-Control'));
+
+        // A submitted correction must take precedence over prefilled contact data.
+        $form = $crawler->selectButton('Confirmer mon choix')->form([
+            'consent[firstName]' => 'Alice',
+            'consent[lastName]' => 'Durand',
+            'consent[signatoryRole]' => 'Directrice',
+        ]);
+        $browser->submit($form);
+        self::assertResponseStatusCodeSame(422);
+        $edited = $browser->getCrawler();
+        self::assertCount(1, $edited->filter('input[name="consent[firstName]"][value="Alice"]'));
+        self::assertCount(1, $edited->filter('input[name="consent[lastName]"][value="Durand"]'));
+        self::assertCount(1, $edited->filter('input[name="consent[signatoryRole]"][value="Directrice"]'));
+        self::assertSame(Client::TODO, $client->getStatus());
+    }
+
+    public static function publicInvitationChannels(): iterable
+    {
+        yield 'lien email' => ['email'];
+        yield 'lien presentiel' => ['onsite'];
     }
 
     public function testPublicConsentFormHasFluidLayoutAndChoiceControls(): void
@@ -267,7 +376,19 @@ final class AdminWorkflowTest extends WebTestCase
         );
         self::assertCount(1, $crawler->filter('link[rel="stylesheet"][href$="/assets/app.css"]'));
         self::assertCount(1, $crawler->filter('.consent-card .field-grid'));
-        self::assertCount(1, $crawler->filter('.choice-area'));
+        // A company name must never become the name of a person when no contact is recorded.
+        foreach (['firstName', 'lastName', 'signatoryRole'] as $field) {
+            $input = $crawler->filter('input[name="consent['.$field.']"]');
+            self::assertCount(1, $input);
+            self::assertContains($input->attr('value'), [null, '']);
+        }
+        self::assertCount(1, $crawler->filter('fieldset.choice-area'));
+        self::assertSame('Votre décision', trim($crawler->filter('.choice-area legend')->text()));
+        self::assertCount(2, $crawler->filter('.choice-cards label.choice-card > input[type="radio"] + span.choice-card__label'));
+        self::assertSame(
+            ['Oui, j’accepte', 'Non, je refuse'],
+            $crawler->filter('.choice-cards label.choice-card')->each(static fn ($node): string => trim($node->text()))
+        );
         self::assertCount(2, $crawler->filter('.choice-area input[type="radio"]'));
     }
 

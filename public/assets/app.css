@@ -102,29 +102,92 @@ form input:focus-visible, form select:focus-visible, form textarea:focus-visible
 }
 .field-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
 .field-grid > div { min-width: 0; }
-.choice-area { background: #f7f9fc; border-radius: 10px; padding: 16px; margin-top: 26px; }
-.choice-area h2 { margin-top: 0; }
-.choice-area label { font-weight: 500; }
-.choice-area #consent_choice { display: grid; gap: 10px; min-width: 0; }
-.choice-area #consent_choice > div {
+.choice-area {
+    min-width: 0;
+    margin: 26px 0 0;
+    padding: 20px;
+    border: 0;
+    border-radius: 12px;
+    background: #f7f9fc;
+}
+.choice-area legend {
+    margin: 0 0 18px;
+    padding: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #18253a;
+}
+.choice-cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    min-width: 0;
+}
+.choice-area .choice-card {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 12px;
-    min-height: 48px;
-    border: 1px solid #dce5ee;
-    border-radius: 9px;
-    padding: 10px 12px;
-    background: #fff;
-}
-.choice-area input[type='radio'] {
-    appearance: auto;
-    width: 20px;
-    height: 20px;
-    flex: none;
+    justify-content: center;
+    min-width: 0;
+    min-height: 120px;
     margin: 0;
-    accent-color: #1a68a0;
+    padding: 20px;
+    border: 2px solid #d6e0ea;
+    border-radius: 16px;
+    background: #fff;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
 }
-.choice-area #consent_choice > div > label { display: block; flex: 1; margin: 0; font-size: 1rem; overflow-wrap: break-word; }
+.choice-card:hover {
+    border-color: #1767a5;
+    box-shadow: 0 8px 20px rgba(23, 103, 165, .08);
+}
+/* Soft success tint for the affirmative option, also before selection. */
+.choice-area .choice-card:has(input[type='radio'][value='yes']) {
+    border-color: #b8dfc2;
+    background: #eff9f1;
+}
+.choice-area .choice-card:has(input[type='radio'][value='yes']):hover {
+    border-color: #75b78c;
+    box-shadow: 0 8px 20px rgba(46, 139, 87, .10);
+}
+.choice-area .choice-card:has(input[type='radio'][value='yes']) .choice-card__label {
+    color: #247044;
+}
+.choice-card__label {
+    min-width: 0;
+    color: #1767a5;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+.choice-card input[type='radio'] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+.choice-card:has(input[type='radio']:checked) {
+    border-color: #1767a5;
+    background: #eff6fc;
+    box-shadow: 0 0 0 3px rgba(23, 103, 165, .12);
+}
+.choice-area .choice-card:has(input[type='radio'][value='yes']:checked) {
+    border-color: #3b9b62;
+    background: #e0f4e6;
+    box-shadow: 0 0 0 3px rgba(46, 139, 87, .16);
+}
+.choice-card:has(input[type='radio']:focus-visible) {
+    outline: 3px solid #92bbe4;
+    outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+    .choice-area .choice-card { transition: none; }
+}
 .consent-form input[type='checkbox'] { width: 20px; height: 20px; accent-color: #1a68a0; vertical-align: middle; }
 .note, .legal-note { color: #66758a; font-size: 0.8125rem; line-height: 1.6; }
 .legal-note { border-top: 1px solid #ebeff4; margin-top: 25px; padding-top: 17px; }
@@ -165,6 +228,8 @@ form ul li { color: #b91c1c; font-size: .8125rem; margin-top: 4px; }
     .client-box { padding: 19px 20px; }
     .policy-box { padding: 18px 22px; }
     .choice-area { padding: 18px 22px 22px; }
+    .choice-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .choice-area .choice-card { min-height: 180px; }
     .center-card .button, .login-card .button { width: auto; }
 }
 @media (min-width: 960px) {

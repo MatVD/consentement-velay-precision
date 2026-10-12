@@ -44,7 +44,7 @@ final class ClientCrudController extends AbstractCrudController
         yield TextField::new('codialId', 'Référence Codial')->hideOnIndex()->setRequired(false);
         if (in_array($pageName, [Crud::PAGE_NEW, Crud::PAGE_EDIT], true)) {
             yield FormField::addFieldset('Représentant (facultatif)')
-                ->setHelp('Ces informations servent uniquement à proposer des valeurs modifiables au technicien.');
+                ->setHelp('Ces informations préremplissent les formulaires envoyés par mail, ouverts par lien ou saisis en présentiel. Elles restent modifiables par le répondant.');
         }
         yield TextField::new('contactFirstName', 'Prénom du représentant')
             ->hideOnIndex()->setRequired(false)
@@ -73,7 +73,7 @@ final class ClientCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $follow = Action::new('suivi', 'Suivi / preuves', 'fa fa-file-signature')
+        $follow = Action::new('suivi', 'Fiche client', 'fa fa-address-card')
             ->linkToRoute('admin_client_actions', static fn (Client $client): array => ['id' => $client->getId()]);
         return $actions
             ->add(Crud::PAGE_INDEX, $follow)

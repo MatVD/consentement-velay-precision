@@ -1,0 +1,24 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}Confirmation du technicien{% endblock %}
+
+{% block main %}
+    <div class="card" style="max-width: 720px;">
+        <div class="card-body">
+            <h2 class="h4">Vérification avant enregistrement définitif</h2>
+            <p>Cette étape est réservée au technicien, après présentation du formulaire au client.</p>
+            <dl>
+                <dt>Client</dt><dd>{{ client.name }}</dd>
+                <dt>Représentant</dt><dd>{{ draft.firstName }} {{ draft.lastName }} ({{ draft.signatoryRole }})</dd>
+                <dt>Choix</dt><dd>{{ draft.choice == 'yes' ? 'Oui, j’accepte' : 'Non, je refuse' }}</dd>
+            </dl>
+            {{ form_start(form) }}
+                {{ form_errors(form) }}
+                {{ form_row(form.assistedConfirmation) }}
+                <p class="text-muted small">L'enregistrement est définitif. La date, l'identité du technicien et la modalité de recueil seront conservées dans l'historique. Un justificatif PDF sera créé.</p>
+                <button type="submit" class="btn btn-primary">Enregistrer la décision</button>
+                <a href="{{ path('admin_client_assisted', {id: client.id}) }}" class="btn btn-link">Recommencer la saisie</a>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
