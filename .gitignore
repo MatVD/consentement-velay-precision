@@ -20,3 +20,6 @@
 /config/reference.php
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
+__pycache__/
+*.pyc
+*.vbackup
