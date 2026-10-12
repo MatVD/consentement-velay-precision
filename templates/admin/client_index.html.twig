@@ -5,7 +5,10 @@
 
 {% block main %}
     {% for link in app.flashes('onsite_link') %}
-        <div class="alert alert-info mb-3 client-link-flash" role="status">
+        <div class="alert alert-info mb-3 client-link-flash position-relative pe-5" role="status">
+            <button type="button" class="btn-close position-absolute top-0 end-0 p-3"
+                    aria-label="Fermer le message de lien présentiel" title="Fermer"
+                    data-bs-dismiss="alert"></button>
             <strong>Lien présentiel généré (valable 24 heures)</strong>
             <p class="mb-2">Copiez le lien pour le présenter au client :</p>
             <div class="input-group">
@@ -17,4 +20,5 @@
     {% endfor %}
     {{ include('@EasyAdmin/flash_messages.html.twig') }}
     {{ parent() }}
+    <script src="{{ asset('assets/client-mobile-accordion.js') }}" defer></script>
 {% endblock %}

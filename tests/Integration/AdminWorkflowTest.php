@@ -178,6 +178,11 @@ final class AdminWorkflowTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('Lien présentiel généré', $crawler->text());
+        $closeButton = $crawler->filter('.client-link-flash > button.btn-close');
+        self::assertCount(1, $closeButton);
+        self::assertSame('button', $closeButton->attr('type'));
+        self::assertSame('Fermer le message de lien présentiel', $closeButton->attr('aria-label'));
+        self::assertSame('alert', $closeButton->attr('data-bs-dismiss'));
         $storedClient = $em->getRepository(Client::class)->find($client->getId());
         self::assertSame(Client::TODO, $storedClient->getStatus());
         self::assertSame(1, $em->getRepository(\App\Entity\ConsentRequest::class)->count([]));
@@ -223,6 +228,12 @@ final class AdminWorkflowTest extends WebTestCase
 
         $crawler = $browser->request('GET', '/admin/client');
         self::assertResponseIsSuccessful();
+        self::assertCount(
+            1,
+            $crawler->filter('script[src$="/assets/client-mobile-accordion.js"]'),
+            'Le comportement de dépliage des fiches mobiles doit être chargé uniquement sur la liste Clients.'
+        );
+        self::assertCount(1, $crawler->filter('tbody td[data-column="status"]'));
         self::assertCount(
             3,
             $crawler->filter('td[data-column="quickActions"] .client-action-label'),

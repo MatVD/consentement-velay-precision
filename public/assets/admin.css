@@ -33,6 +33,8 @@
 .ea .table.datagrid td[data-column='quickActions'] [role='group'] { display: flex !important; flex-wrap: wrap; }
 /* Real, selectable button captions: icon-only on desktop, visible on touch widths. */
 .ea .client-action-label { display: none; }
+/* Card toggles only appear in the mobile client list. */
+.ea .client-card-toggle { display: none; }
 
 /* Small screens: keep the essential client actions visible and present each row as a card. */
 @media (max-width: 767.98px) {
@@ -94,21 +96,26 @@
         box-shadow: none;
     }
     .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody tr:not(.empty-row) {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
+        /* One compact horizontal header: client | centered status | chevron. */
+        display: grid;
+        position: relative;
+        grid-template-columns: minmax(0, 1fr) max-content minmax(0, 1fr);
+        column-gap: .45rem;
+        align-items: center;
+        min-height: 56px;
         width: 100%;
         min-width: 0;
         max-width: 100%;
         margin: 0;
-        padding: .85rem 1rem;
-        border: 1px solid var(--border-color, #e1e7ef);
-        border-radius: .75rem;
+        padding: .55rem .75rem;
+        border: 1px solid var(--border-color, #c6d5eb);
+        border-radius: .85rem;
         background: var(--body-bg, #fff);
     }
     .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody tr:not(.empty-row) > td {
         display: block;
         position: static;
+        grid-column: 1 / -1;
         width: 100%;
         min-width: 0;
         min-inline-size: 0;
@@ -145,15 +152,83 @@
         font-weight: 700;
         line-height: 1.4;
     }
-    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td[data-column='name'] {
-        order: -1;
-        font-size: 1.125rem;
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody tr:not(.empty-row) > td[data-column='name'] {
+        order: -2;
+        grid-column: 1;
+        grid-row: 1;
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+        font-size: .95rem;
         font-weight: 700;
-        padding-top: 0;
+        padding: 0;
+        border: 0;
+    }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td[data-column='name'] > span {
+        display: block;
+        min-width: 0;
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
     .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td[data-column='name']::before {
         display: none;
         content: none;
+    }
+    /* Keep the client's current status visible even when the card is folded. */
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody tr:not(.empty-row) > td[data-column='status'] {
+        order: -1;
+        grid-column: 2;
+        grid-row: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .2rem;
+        padding: 0;
+        border-top: 0;
+    }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td[data-column='status']::before {
+        display: none;
+        content: none;
+    }
+    /* Leave some breathing room between the header and the first detail divider. */
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody tr:not(.client-card-collapsed) > td[data-column='email'] {
+        margin-top: .6rem;
+    }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody tr.client-card-collapsed > td:not([data-column='name']):not([data-column='status']) {
+        display: none;
+    }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) .client-card-toggle {
+        display: inline-flex;
+        position: absolute;
+        top: .35rem;
+        right: .45rem;
+        justify-content: center;
+        align-items: center;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border: 0;
+        border-radius: .5rem;
+        color: var(--text-color, #3d4b60);
+        background: transparent;
+        cursor: pointer;
+    }
+    .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) .client-card-toggle:focus-visible {
+        outline: 3px solid #4b97da;
+        outline-offset: 2px;
+    }
+    .ea.ea-index-Client .client-card-chevron {
+        display: block;
+        width: 10px;
+        height: 10px;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: translateY(-2px) rotate(45deg);
+    }
+    .ea.ea-index-Client tr:not(.client-card-collapsed) .client-card-chevron {
+        transform: translateY(2px) rotate(225deg);
     }
     .ea.ea-index-Client .table.datagrid:not(.datagrid-empty) tbody td[data-column='quickActions'] {
         order: 1;

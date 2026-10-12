@@ -31,7 +31,7 @@ Utiliser l’émulation responsive des outils de développement de Brave/Chrome 
 | --- | --- |
 | Accueil, connexion, confirmation et lien invalide | Pas de débordement horizontal ; typographie, marges et bouton lisibles |
 | Formulaire de consentement | Champs empilés sur mobile, en deux colonnes à partir de 640 px ; choix Oui/Non facilement sélectionnables |
-| Liste Clients (`/admin/client`) | Fiches sur mobile ; statut, email et actions rapides accessibles ; filtres et menu de navigation fonctionnels |
+| Liste Clients (`/admin/client`) | Sous 768 px, chaque fiche est repliée au chargement : nom et statut restent visibles. Le chevron ou un appui sur une zone non interactive déplie l'email, la date, les actions rapides et le suivi ; un second appui replie. Les boutons d'action ne doivent pas déclencher le dépliage, et le clic sur une fiche ne doit pas ouvrir l'édition. Sur desktop, le tableau reste inchangé. |
 | Nouveau client et modification | Deux groupes (« Informations du client » et « Représentant (facultatif) »), champs entièrement visibles, boutons de validation atteignables |
 | Formulaire assisté | Identité préremplie lisible ; boutons et case de confirmation sélectionnables sans zoom forcé |
 | Suivi / preuves | Décisions et événements affichés sans tableau tronqué sur mobile |
