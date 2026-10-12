@@ -1,10 +1,10 @@
 <?php
 namespace App\Controller;
 
-use App\Dto\ConsentSubmission;
 use App\Entity\ConsentRequest;
 use App\Form\ConsentType;
 use App\Service\ConsentPolicy;
+use App\Service\ConsentPrefill;
 use App\Service\ConsentRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,7 +22,9 @@ final class ConsentController extends AbstractController
             return $this->render('consent/invalid.html.twig', [], new Response(status: 410));
         }
 
-        $data = new ConsentSubmission();
+        // Offer the client's recorded representative details without fixing the identity:
+        // the recipient can verify and correct all three fields before confirming.
+        $data = ConsentPrefill::forClient($invitation->getClient());
         $form = $this->createForm(ConsentType::class, $data);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {

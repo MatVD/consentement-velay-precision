@@ -281,6 +281,68 @@ final class AdminWorkflowTest extends WebTestCase
         );
     }
 
+    /**
+     * @dataProvider publicInvitationChannels
+     */
+    public function testPublicInvitationPrefillsEditableRepresentativeForBothChannels(string $channel): void
+    {
+        $browser = $this->browserWithAdmin();
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        $client = (new Client())->setName('Commerce de démonstration')
+            ->setEmail('contact@example.fr')
+            ->setContactFirstName('Anne')
+            ->setContactLastName('Martin')
+            ->setContactRole('Gérante');
+        $em->persist($client);
+        $em->flush();
+
+        $token = bin2hex(random_bytes(32));
+        $em->persist(new ConsentRequest(
+            $client,
+            hash('sha256', $token),
+            $channel,
+            new \DateTimeImmutable('+1 day', new \DateTimeZone('UTC'))
+        ));
+        $em->flush();
+
+        $crawler = $browser->request('GET', '/c/'.$token);
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Commerce de démonstration', $crawler->text());
+        foreach ([
+            'firstName' => 'Anne',
+            'lastName' => 'Martin',
+            'signatoryRole' => 'Gérante',
+        ] as $field => $value) {
+            $input = $crawler->filter('input[name="consent['.$field.']"]');
+            self::assertCount(1, $input);
+            self::assertSame($value, $input->attr('value'), $channel.' : '.$field);
+            self::assertNull($input->attr('readonly'), $channel.' : '.$field);
+            self::assertNull($input->attr('disabled'), $channel.' : '.$field);
+        }
+        self::assertCount(0, $crawler->filter('input[name="consent[choice]"]:checked'));
+        self::assertStringContainsString('no-store', (string) $browser->getResponse()->headers->get('Cache-Control'));
+
+        // A submitted correction must take precedence over prefilled contact data.
+        $form = $crawler->selectButton('Confirmer mon choix')->form([
+            'consent[firstName]' => 'Alice',
+            'consent[lastName]' => 'Durand',
+            'consent[signatoryRole]' => 'Directrice',
+        ]);
+        $browser->submit($form);
+        self::assertResponseStatusCodeSame(422);
+        $edited = $browser->getCrawler();
+        self::assertCount(1, $edited->filter('input[name="consent[firstName]"][value="Alice"]'));
+        self::assertCount(1, $edited->filter('input[name="consent[lastName]"][value="Durand"]'));
+        self::assertCount(1, $edited->filter('input[name="consent[signatoryRole]"][value="Directrice"]'));
+        self::assertSame(Client::TODO, $client->getStatus());
+    }
+
+    public static function publicInvitationChannels(): iterable
+    {
+        yield 'lien email' => ['email'];
+        yield 'lien presentiel' => ['onsite'];
+    }
+
     public function testPublicConsentFormHasFluidLayoutAndChoiceControls(): void
     {
         $browser = $this->browserWithAdmin();
@@ -307,6 +369,12 @@ final class AdminWorkflowTest extends WebTestCase
         );
         self::assertCount(1, $crawler->filter('link[rel="stylesheet"][href$="/assets/app.css"]'));
         self::assertCount(1, $crawler->filter('.consent-card .field-grid'));
+        // A company name must never become the name of a person when no contact is recorded.
+        foreach (['firstName', 'lastName', 'signatoryRole'] as $field) {
+            $input = $crawler->filter('input[name="consent['.$field.']"]');
+            self::assertCount(1, $input);
+            self::assertContains($input->attr('value'), [null, '']);
+        }
         self::assertCount(1, $crawler->filter('fieldset.choice-area'));
         self::assertSame('Votre décision', trim($crawler->filter('.choice-area legend')->text()));
         self::assertCount(2, $crawler->filter('.choice-cards label.choice-card > input[type="radio"] + span.choice-card__label'));

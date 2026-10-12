@@ -8,7 +8,7 @@ Application autonome de recueil d'un accord **déclaratif** sur le recours à la
 - Identité et qualité **déclarées** du répondant, choix **Oui / Non**, date serveur et version exacte du texte.
 - Administration protégée par identifiant/mot de passe avec **EasyAdmin 5**.
 - Clients, consultation des preuves, statuts **À faire / Mail envoyé / Oui / Non**.
-- **Représentant facultatif** renseigné séparément de la raison sociale ; la saisie assistée ne déduit jamais un nom de personne de celui de l'entreprise.
+- **Représentant facultatif** renseigné séparément de la raison sociale ; son prénom, son nom et sa fonction préremplissent tous les formulaires (lien mail, lien présentiel, saisie accompagnée) mais restent modifiables. Aucun nom de personne n’est déduit de la raison sociale.
 - Envoi de l'**invitation initiale** par email depuis EasyAdmin (SMTP requis), ou génération d'un lien pour une visite technicien.
 - Export **CSV UTF-8** progressif en trois colonnes « Identité », « Date », « Statut » ; import CSV validé en lots avec bilan des rejets et doublons.
 - Récépissé PDF **non certifié** archivé dans un volume Docker privé, empreinte SHA-256 et journal d'événements.
