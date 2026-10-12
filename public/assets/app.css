@@ -143,6 +143,18 @@ form input:focus-visible, form select:focus-visible, form textarea:focus-visible
     border-color: #1767a5;
     box-shadow: 0 8px 20px rgba(23, 103, 165, .08);
 }
+/* Soft success tint for the affirmative option, also before selection. */
+.choice-area .choice-card:has(input[type='radio'][value='yes']) {
+    border-color: #b8dfc2;
+    background: #eff9f1;
+}
+.choice-area .choice-card:has(input[type='radio'][value='yes']):hover {
+    border-color: #75b78c;
+    box-shadow: 0 8px 20px rgba(46, 139, 87, .10);
+}
+.choice-area .choice-card:has(input[type='radio'][value='yes']) .choice-card__label {
+    color: #247044;
+}
 .choice-card__label {
     min-width: 0;
     color: #1767a5;
@@ -163,6 +175,11 @@ form input:focus-visible, form select:focus-visible, form textarea:focus-visible
     border-color: #1767a5;
     background: #eff6fc;
     box-shadow: 0 0 0 3px rgba(23, 103, 165, .12);
+}
+.choice-area .choice-card:has(input[type='radio'][value='yes']:checked) {
+    border-color: #3b9b62;
+    background: #e0f4e6;
+    box-shadow: 0 0 0 3px rgba(46, 139, 87, .16);
 }
 .choice-card:has(input[type='radio']:focus-visible) {
     outline: 3px solid #92bbe4;

@@ -43,6 +43,23 @@ final class ResponsivePagesTest extends WebTestCase
         self::assertStringContainsString(".choice-card:has(input[type='radio']:focus-visible)", $css);
     }
 
+    public function testAffirmativeConsentCardHasPastelSuccessStyling(): void
+    {
+        $css = file_get_contents(dirname(__DIR__).'/public/assets/app.css');
+        self::assertIsString($css);
+        self::assertStringContainsString(
+            ".choice-area .choice-card:has(input[type='radio'][value='yes']) {",
+            $css
+        );
+        self::assertStringContainsString('background: #eff9f1;', $css);
+        self::assertStringContainsString('color: #247044;', $css);
+        self::assertStringContainsString(
+            ".choice-area .choice-card:has(input[type='radio'][value='yes']:checked) {",
+            $css
+        );
+        self::assertStringContainsString('background: #e0f4e6;', $css);
+    }
+
     public static function publicPages(): iterable
     {
         yield 'accueil' => ['/'];
