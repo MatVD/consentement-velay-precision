@@ -107,7 +107,41 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertCount(1, $crawler->filter('input[name="consent[lastName]"][value="Martin"]'));
         self::assertCount(1, $crawler->filter('input[name="consent[signatoryRole]"][value="Gérante"]'));
         self::assertCount(0, $crawler->filter('input[name="consent[choice]"]:checked'));
-        self::assertStringContainsString('La raison sociale n\'est jamais utilisée', $crawler->text());
+        self::assertStringContainsString('Votre choix concernant la signature électronique', $crawler->text());
+        self::assertStringNotContainsString('Texte présenté au client', $crawler->text());
+        self::assertStringNotContainsString('2026-10-10-v1', $crawler->text());
+        self::assertStringNotContainsString('technicien', $crawler->text());
+        self::assertCount(0, $crawler->filter('input[name$="[assistedConfirmation]"]'));
+        self::assertCount(1, $crawler->filter('link[rel="stylesheet"][href$="/assets/app.css"]'));
+    }
+
+    public function testAssistedConsentRequiresSeparateTechnicianConfirmation(): void
+    {
+        $browser = $this->browserWithAdmin();
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        $client = (new Client())->setName('Commerce de démonstration');
+        $em->persist($client);
+        $em->flush();
+
+        $page = $browser->request('GET', '/admin/clients/'.$client->getId().'/assisted');
+        self::assertResponseIsSuccessful();
+        $form = $page->selectButton('Confirmer mon choix')->form([
+            'consent[firstName]' => 'Alice',
+            'consent[lastName]' => 'Martin',
+            'consent[signatoryRole]' => 'Gérante',
+            'consent[choice]' => 'yes',
+        ]);
+        $browser->submit($form);
+        self::assertResponseRedirects('/admin/clients/'.$client->getId().'/assisted/confirm');
+        self::assertSame(Client::TODO, $client->getStatus());
+
+        $confirmation = $browser->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Confirmation du technicien', $confirmation->text());
+        self::assertStringContainsString('Alice Martin', $confirmation->text());
+        self::assertStringContainsString('Oui, j’accepte', $confirmation->text());
+        self::assertCount(1, $confirmation->filter('input[type="checkbox"]'));
+        self::assertCount(0, $confirmation->filter('input[name="consent[firstName]"]'));
     }
 
     public function testImportFormShowsReportAfterPostingCsv(): void
@@ -206,7 +240,6 @@ final class AdminWorkflowTest extends WebTestCase
             '/admin/client',
             '/admin/client/new',
             '/admin/client/'.$client->getId().'/edit',
-            '/admin/clients/'.$client->getId().'/assisted',
             '/admin/clients/'.$client->getId().'/actions',
             '/admin/import',
         ] as $route) {
@@ -225,6 +258,10 @@ final class AdminWorkflowTest extends WebTestCase
             );
             self::assertSame('fr', $crawler->filter('html')->attr('lang'), $route);
         }
+
+        $assisted = $browser->request('GET', '/admin/clients/'.$client->getId().'/assisted');
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $assisted->filter('link[rel="stylesheet"][href$="/assets/app.css"]'));
 
         $crawler = $browser->request('GET', '/admin/client');
         self::assertResponseIsSuccessful();
