@@ -75,7 +75,8 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertStringContainsString('Filtres', $crawler->text());
         self::assertStringContainsString('Ajouter un client', $crawler->text());
         self::assertSelectorExists('td[data-column="quickActions"] form[action$="/email"]');
-        self::assertSelectorExists('td[data-column="quickActions"] form[action$="/onsite"]');
+        self::assertSelectorNotExists('td[data-column="quickActions"] form[action$="/onsite"]');
+        self::assertSelectorExists('td.actions a.action-suivi[href$="/actions"]');
         self::assertSelectorExists('td[data-column="quickActions"] a[href$="/assisted"]');
         self::assertSelectorExists('link[rel="stylesheet"][href$="/assets/admin.css"]');
 
@@ -198,7 +199,7 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertNotContains('Commerce déjà invité', $names);
     }
 
-    public function testOnsiteQuickActionCreatesOnlyAnInvitation(): void
+    public function testClientDetailCreatesOnlyAnInvitation(): void
     {
         $browser = $this->browserWithAdmin();
         $em = static::getContainer()->get('doctrine.orm.entity_manager');
@@ -208,13 +209,19 @@ final class AdminWorkflowTest extends WebTestCase
 
         $crawler = $browser->request('GET', '/admin/client');
         self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('td[data-column="quickActions"] form[action$="/onsite"]'));
+        $crawler = $browser->request('GET', '/admin/clients/'.$client->getId().'/actions');
+        self::assertResponseIsSuccessful();
         $form = $crawler->filter('form[action$="/onsite"]')->form();
         $browser->submit($form);
-        self::assertResponseRedirects('/admin/client');
+        self::assertResponseRedirects('/admin/clients/'.$client->getId().'/actions');
         $crawler = $browser->followRedirect();
 
         self::assertResponseIsSuccessful();
-        self::assertStringContainsString('Lien présentiel généré', $crawler->text());
+        self::assertStringContainsString('Lien individuel généré', $crawler->text());
+        self::assertCount(1, $crawler->filter('.client-link-flash button[data-copy-link]'));
+        self::assertCount(1, $crawler->filter('.client-link-flash input[readonly]'));
+        self::assertStringContainsString('no-store', (string) $browser->getResponse()->headers->get('Cache-Control'));
         $closeButton = $crawler->filter('.client-link-flash > button.btn-close');
         self::assertCount(1, $closeButton);
         self::assertSame('button', $closeButton->attr('type'));
@@ -275,9 +282,9 @@ final class AdminWorkflowTest extends WebTestCase
         );
         self::assertCount(1, $crawler->filter('tbody td[data-column="status"]'));
         self::assertCount(
-            3,
+            2,
             $crawler->filter('td[data-column="quickActions"] .client-action-label'),
-            'Les actions clients doivent porter trois vrais libellés, visibles sur mobile.'
+            'Les deux actions rapides doivent porter des libellés visibles sur mobile.'
         );
     }
 

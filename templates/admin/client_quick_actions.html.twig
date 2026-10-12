@@ -3,7 +3,6 @@
 {% set decision_finale = client.status in ['yes', 'no'] %}
 {% set email_indisponible = decision_finale or not client.email %}
 {% set email_aide = decision_finale ? 'Décision déjà enregistrée' : (not client.email ? 'Adresse email manquante' : 'Envoyer le formulaire par email') %}
-{% set presentiel_aide = decision_finale ? 'Décision déjà enregistrée' : 'Générer un lien présentiel' %}
 {% set assistance_aide = decision_finale ? 'Décision déjà enregistrée' : 'Remplir le formulaire avec le client' %}
 
 <div class="d-inline-flex align-items-center gap-2" role="group" aria-label="Actions pour {{ client.name }}">
@@ -13,14 +12,6 @@
                 aria-label="{{ email_aide }}" {% if email_indisponible %}disabled{% endif %}>
             <i class="fa fa-envelope" aria-hidden="true"></i>
             <span class="client-action-label">Email</span>
-        </button>
-    </form>
-    <form method="post" action="{{ path('admin_client_onsite', {id: client.id}) }}" class="m-0" title="{{ presentiel_aide }}">
-        <input type="hidden" name="_token" value="{{ csrf_token('onsite_' ~ client.id) }}">
-        <button type="submit" class="btn btn-sm btn-outline-secondary" title="{{ presentiel_aide }}"
-                aria-label="{{ presentiel_aide }}" {% if decision_finale %}disabled{% endif %}>
-            <i class="fa fa-link" aria-hidden="true"></i>
-            <span class="client-action-label">Présentiel</span>
         </button>
     </form>
     {% if decision_finale %}

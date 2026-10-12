@@ -39,7 +39,7 @@ final class AdminResponsiveCssTest extends TestCase
         self::assertStringContainsString('.ea .client-action-label { display: none; }', $css);
         self::assertStringContainsString('.ea .client-action-label { display: inline; }', $css);
         self::assertStringNotContainsString(".btn::after { content: 'Email'; }", $css);
-        foreach (['Email', 'Présentiel', 'Accompagner'] as $label) {
+        foreach (['Email', 'Accompagner'] as $label) {
             self::assertStringContainsString('<span class="client-action-label">'.$label.'</span>', $twig);
         }
     }

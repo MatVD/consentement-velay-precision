@@ -37,7 +37,7 @@ final class ClientActionsController extends AbstractController
             'decisions' => $em->getRepository(ConsentDecision::class)->findBy(['client' => $client], ['id' => 'DESC']),
             'events' => $em->getRepository(AuditEvent::class)->findBy(['client' => $client], ['id' => 'DESC'], 30),
             'files' => $files,
-        ]);
+        ], new Response(headers: ['Cache-Control' => 'private, no-store']));
     }
 
     #[Route('/admin/clients/{id}/email', name: 'admin_client_send_email', requirements: ['id' => '\\d+'], methods: ['POST'])]
@@ -67,7 +67,7 @@ final class ClientActionsController extends AbstractController
         } catch (\DomainException $e) {
             $this->addFlash('danger', $e->getMessage());
         }
-        return $this->redirectToRoute('admin_client_index');
+        return $this->redirectToRoute('admin_client_actions', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
     }
 
     #[AdminRoute(path: '/clients/{id}/assisted', name: 'client_assisted', options: ['requirements' => ['id' => '\\d+'], 'methods' => ['GET', 'POST']])]

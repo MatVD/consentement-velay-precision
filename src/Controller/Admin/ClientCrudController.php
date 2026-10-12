@@ -73,7 +73,7 @@ final class ClientCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $follow = Action::new('suivi', 'Suivi / preuves', 'fa fa-file-signature')
+        $follow = Action::new('suivi', 'Fiche client', 'fa fa-address-card')
             ->linkToRoute('admin_client_actions', static fn (Client $client): array => ['id' => $client->getId()]);
         return $actions
             ->add(Crud::PAGE_INDEX, $follow)
