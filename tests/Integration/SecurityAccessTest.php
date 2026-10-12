@@ -2,6 +2,8 @@
 namespace App\Tests\Integration;
 
 use App\Entity\Client;
+use App\Entity\ClientLifecycleEvent;
+use App\Entity\ConsentRequest;
 use App\Entity\User;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Tools\DsnParser;
@@ -158,6 +160,79 @@ final class SecurityAccessTest extends WebTestCase
         );
         self::assertSame(0, static::getContainer()->get('doctrine.orm.entity_manager')
             ->getRepository(User::class)->count([]));
+    }
+
+    public function testAdminClosesContractAndHistoryStaysWithoutClientIdentity(): void
+    {
+        $browser = static::createClient();
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        $client = (new Client())->setName('Client fictif identifiable')
+            ->setEmail('identite@example.test');
+        $em->persist($client);
+        $em->flush();
+
+        $token = bin2hex(random_bytes(32));
+        $em->persist(new ConsentRequest(
+            $client, hash('sha256', $token), 'onsite', new \DateTimeImmutable('+1 day')
+        ));
+        $em->flush();
+        $admin = $this->saveUser($em, 'admin-archive@example.test', ['ROLE_ADMIN']);
+        $browser->loginUser($admin);
+
+        $page = $browser->request('GET', '/admin/clients/'.$client->getId().'/actions');
+        self::assertResponseIsSuccessful();
+        $form = $page->filter('form[action$="/close-contract"]')->form([
+            'ended_at' => (new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')))->format('Y-m-d'),
+        ]);
+        $browser->submit($form);
+        self::assertResponseRedirects('/admin/clients/'.$client->getId().'/actions');
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        $stored = $em->getRepository(Client::class)->find($client->getId());
+        self::assertSame(Client::ARCHIVED, $stored->getLifecycleStage());
+        self::assertNotNull($stored->getContractEndedAt());
+        self::assertSame(1, $em->getRepository(ClientLifecycleEvent::class)->count([]));
+
+        $page = $browser->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Client archivé', $page->text());
+        self::assertCount(0, $page->filter('form[action$="/close-contract"]'));
+
+        $browser->request('GET', '/c/'.$token);
+        self::assertResponseStatusCodeSame(410);
+        $browser->request('GET', '/admin/client/'.$client->getId().'/edit');
+        self::assertResponseStatusCodeSame(403);
+
+        $browser->request('GET', '/admin/lifecycle/history');
+        self::assertResponseIsSuccessful();
+        $html = $browser->getResponse()->getContent();
+        self::assertStringContainsString('Client archivé', $html);
+        self::assertStringNotContainsString('Client fictif identifiable', $html);
+        self::assertStringNotContainsString('identite@example.test', $html);
+        self::assertStringNotContainsString('client_id', $html);
+    }
+
+    public function testReadOnlyStaffCanSeeHistoryButCannotCloseContract(): void
+    {
+        $browser = static::createClient();
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        $client = (new Client())->setName('Commerce exemple');
+        $em->persist($client);
+        $em->flush();
+        $auditor = $this->saveUser($em, 'consultation@example.test', ['ROLE_AUDITOR']);
+        $browser->loginUser($auditor);
+
+        $browser->request('GET', '/admin/lifecycle/history');
+        self::assertResponseIsSuccessful();
+        $browser->request('GET', '/admin/clients/'.$client->getId().'/actions');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('form[action$="/close-contract"]');
+
+        $browser->request('POST', '/admin/clients/'.$client->getId().'/close-contract', [
+            'ended_at' => (new \DateTimeImmutable('now'))->format('Y-m-d')
+        ]);
+        self::assertResponseStatusCodeSame(403);
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
+        self::assertTrue($em->getRepository(Client::class)->find($client->getId())->isActive());
     }
 
     private function saveUser(EntityManager $em, string $email, array $roles): User

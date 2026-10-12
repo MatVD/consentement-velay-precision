@@ -50,6 +50,14 @@ final class PrivacyInventoryCommand extends Command
             ->select('COUNT(r.id)')->from(ConsentRequest::class, 'r')
             ->where('r.createdAt < :cutoff')
             ->setParameter('cutoff', $cutoff)->getQuery()->getSingleScalarResult();
+        $archived = $this->em->getRepository(Client::class)->count(['lifecycleStage' => Client::ARCHIVED]);
+        $dueForReview = $this->em->createQueryBuilder()
+            ->select('COUNT(c.id)')->from(Client::class, 'c')
+            ->where('c.lifecycleStage = :archived')
+            ->andWhere('c.contractEndedAt <= :threshold')
+            ->setParameter('archived', Client::ARCHIVED)
+            ->setParameter('threshold', $now->modify('-1 year'))
+            ->getQuery()->getSingleScalarResult();
         $oldDecisions = $this->em->createQueryBuilder()
             ->select('COUNT(d.id)')->from(ConsentDecision::class, 'd')
             ->where('d.decidedAt < :cutoff')
@@ -57,6 +65,8 @@ final class PrivacyInventoryCommand extends Command
 
         foreach ([
             'Clients' => $this->em->getRepository(Client::class)->count([]),
+            'Clients archivés (nominatifs)' => $archived,
+            'Archives de 1 an ou plus (à examiner, aucune action automatique)' => (int) $dueForReview,
             'Liens de consentement' => $this->em->getRepository(ConsentRequest::class)->count([]),
             'Liens expirés et inutilisés' => (int) $expired,
             'Liens de plus de '.$days.' jours' => (int) $oldInvitations,

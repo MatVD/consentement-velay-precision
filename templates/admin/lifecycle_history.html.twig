@@ -1,0 +1,21 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+{% block content_title %}Historique du cycle de vie des clients{% endblock %}
+{% block main %}
+  <p>Les événements sont visibles par les utilisateurs autorisés à consulter l'application. Aucun nom, adresse email ou identifiant de client n'est conservé dans cet historique général.</p>
+  <div class="responsive-data-table" role="region" aria-label="Historique des archivages" tabindex="0">
+    <table class="table table-striped">
+      <thead><tr><th>Date</th><th>Événement</th></tr></thead>
+      <tbody>
+        {% for event in events %}
+          <tr>
+            <td data-label="Date">{{ event.createdAt|date('d/m/Y', 'Europe/Paris') }}</td>
+            <td data-label="Événement">{{ event.label }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="2">Aucun événement pour le moment.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="text-muted">Seuls les 100 événements les plus récents sont affichés.</p>
+{% endblock %}

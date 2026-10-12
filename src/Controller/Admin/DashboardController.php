@@ -33,6 +33,7 @@ final class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linkTo(ClientCrudController::class, 'Clients', 'fa fa-users');
+        yield MenuItem::linkToRoute('Historique des archives', 'fa fa-history', 'admin_lifecycle_history');
         yield MenuItem::linkToRoute('Importer des clients', 'fa fa-file-import', 'admin_clients_import')->setPermission('ROLE_ADMIN');
         yield MenuItem::linkToRoute('Exporter le CSV', 'fa fa-file-csv', 'admin_clients_export')->setPermission('ROLE_ADMIN');
     }

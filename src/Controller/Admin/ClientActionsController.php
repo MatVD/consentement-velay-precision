@@ -79,7 +79,7 @@ final class ClientActionsController extends AbstractController
     #[AdminRoute(path: '/clients/{id}/assisted', name: 'client_assisted', options: ['requirements' => ['id' => '\\d+'], 'methods' => ['GET', 'POST']])]
     public function assisted(Client $client, Request $request): Response
     {
-        if (in_array($client->getStatus(), [Client::YES, Client::NO], true)) {
+        if (!$client->isActive() || in_array($client->getStatus(), [Client::YES, Client::NO], true)) {
             $this->addFlash('warning', 'Une décision définitive existe déjà pour ce client.');
             return $this->redirectToRoute('admin_client_index');
         }
@@ -126,7 +126,7 @@ final class ClientActionsController extends AbstractController
         $session = $request->getSession();
         $draftKey = $this->assistedDraftKey($client);
 
-        if (in_array($client->getStatus(), [Client::YES, Client::NO], true)) {
+        if (!$client->isActive() || in_array($client->getStatus(), [Client::YES, Client::NO], true)) {
             $session->remove($draftKey);
             $this->addFlash('warning', 'Une décision définitive existe déjà pour ce client.');
             return $this->redirectToRoute('admin_client_index');

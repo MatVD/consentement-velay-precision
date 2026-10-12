@@ -25,6 +25,9 @@ final class ConsentRecorder
         try {
             return $this->em->wrapInTransaction(function (EntityManagerInterface $em) use ($client, $submission, $httpRequest, $operator, &$createdEvidence): ConsentDecision {
                 $em->refresh($client, LockMode::PESSIMISTIC_WRITE);
+                if (!$client->isActive()) {
+                    throw new \DomainException('Client archivé : aucune décision ne peut être enregistrée.');
+                }
                 if (in_array($client->getStatus(), [Client::YES, Client::NO], true)) {
                     throw new \DomainException('Une décision définitive est déjà enregistrée.');
                 }
@@ -77,7 +80,7 @@ final class ConsentRecorder
                 $client = $invitation->getClient();
                 $em->refresh($client, LockMode::PESSIMISTIC_WRITE);
                 $em->refresh($invitation, LockMode::PESSIMISTIC_WRITE);
-                if (!$invitation->isOpen() || in_array($client->getStatus(), [Client::YES, Client::NO], true)) {
+                if (!$client->isActive() || !$invitation->isOpen() || in_array($client->getStatus(), [Client::YES, Client::NO], true)) {
                     throw new \DomainException('Ce formulaire n’est plus disponible.');
                 }
                 $at = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));

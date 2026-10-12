@@ -18,7 +18,7 @@ final class ConsentController extends AbstractController
     public function form(string $token, Request $request, EntityManagerInterface $em, ConsentRecorder $recorder): Response
     {
         $invitation = $em->getRepository(ConsentRequest::class)->findOneBy(['tokenHash' => hash('sha256', $token)]);
-        if (!$invitation || !$invitation->isOpen() || in_array($invitation->getClient()->getStatus(), ['yes', 'no'], true)) {
+        if (!$invitation || !$invitation->isOpen() || !$invitation->getClient()->isActive() || in_array($invitation->getClient()->getStatus(), ['yes', 'no'], true)) {
             return $this->render('consent/invalid.html.twig', [], new Response(status: 410));
         }
 

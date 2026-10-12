@@ -1,9 +1,9 @@
 {# Actions directes par client : POST avec protection CSRF, jamais de lien GET mutateur. #}
 {% set client = entity.instance %}
-{% set decision_finale = client.status in ['yes', 'no'] %}
+{% set decision_finale = client.status in ['yes', 'no'] or not client.active %}
 {% set email_indisponible = decision_finale or not client.email %}
-{% set email_aide = decision_finale ? 'Décision déjà enregistrée' : (not client.email ? 'Adresse email manquante' : 'Envoyer le formulaire par email') %}
-{% set assistance_aide = decision_finale ? 'Décision déjà enregistrée' : 'Remplir le formulaire avec le client' %}
+{% set email_aide = not client.active ? 'Client archivé' : (decision_finale ? 'Décision déjà enregistrée' : (not client.email ? 'Adresse email manquante' : 'Envoyer le formulaire par email')) %}
+{% set assistance_aide = not client.active ? 'Client archivé' : (decision_finale ? 'Décision déjà enregistrée' : 'Remplir le formulaire avec le client') %}
 
 {% if is_granted('ROLE_OPERATOR') %}
 <div class="d-inline-flex align-items-center gap-2" role="group" aria-label="Actions pour {{ client.name }}">

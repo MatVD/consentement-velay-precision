@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'client')]
 #[ORM\Index(name: 'IDX_CLIENT_STATUS', columns: ['status'])]
 #[ORM\Index(name: 'IDX_CLIENT_CODIAL', columns: ['codial_id'])]
+#[ORM\Index(name: 'IDX_CLIENT_LIFECYCLE', columns: ['lifecycle_stage'])]
 #[ORM\HasLifecycleCallbacks]
 class Client
 {
@@ -15,6 +16,8 @@ class Client
     public const SENT = 'sent';
     public const YES = 'yes';
     public const NO = 'no';
+    public const ACTIVE = 'active';
+    public const ARCHIVED = 'archived';
 
     #[ORM\Id, ORM\GeneratedValue(strategy: 'IDENTITY'), ORM\Column]
     private ?int $id = null;
@@ -49,6 +52,15 @@ class Client
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $statusAt = null;
+
+    #[ORM\Column(length: 20, options: ['default' => 'active'])]
+    private string $lifecycleStage = self::ACTIVE;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $contractEndedAt = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $archivedAt = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
@@ -85,6 +97,25 @@ class Client
         return match ($this->status) { self::SENT => 'Mail envoyé', self::YES => 'Oui', self::NO => 'Non', default => 'À faire' };
     }
     public function getStatusAt(): ?\DateTimeImmutable { return $this->statusAt; }
+    public function getLifecycleStage(): string { return $this->lifecycleStage; }
+    public function getContractEndedAt(): ?\DateTimeImmutable { return $this->contractEndedAt; }
+    public function getArchivedAt(): ?\DateTimeImmutable { return $this->archivedAt; }
+    public function isActive(): bool { return $this->lifecycleStage === self::ACTIVE; }
+
+    /** Seul le service d'archivage peut déclencher la clôture. */
+    public function archiveContract(\DateTimeImmutable $endedAt, \DateTimeImmutable $archivedAt): void
+    {
+        if (!$this->isActive()) {
+            throw new \DomainException('Ce client est déjà archivé.');
+        }
+        if ($endedAt > $archivedAt) {
+            throw new \DomainException('La fin de contrat ne peut pas se situer dans le futur.');
+        }
+        $this->contractEndedAt = $endedAt;
+        $this->archivedAt = $archivedAt;
+        $this->lifecycleStage = self::ARCHIVED;
+        $this->updatedAt = $archivedAt;
+    }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
 

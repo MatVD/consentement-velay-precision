@@ -29,6 +29,9 @@ final class InvitationService
         // created from an outdated status after a final decision is committed.
         return $this->em->wrapInTransaction(function (EntityManagerInterface $em) use ($client, $channel): array {
             $em->refresh($client, LockMode::PESSIMISTIC_WRITE);
+            if (!$client->isActive()) {
+                throw new \DomainException('La relation contractuelle est terminée : client archivé.');
+            }
             if (in_array($client->getStatus(), [Client::YES, Client::NO], true)) {
                 throw new \DomainException('Une décision définitive est déjà enregistrée.');
             }
@@ -79,7 +82,7 @@ final class InvitationService
             $em->refresh($client, LockMode::PESSIMISTIC_WRITE);
             $em->refresh($invitation, LockMode::PESSIMISTIC_WRITE);
             $invitation->markSent();
-            $statusUpdated = !in_array($client->getStatus(), [Client::YES, Client::NO], true);
+            $statusUpdated = $client->isActive() && !in_array($client->getStatus(), [Client::YES, Client::NO], true);
             if ($statusUpdated) {
                 $client->changeStatus(Client::SENT, new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
             }

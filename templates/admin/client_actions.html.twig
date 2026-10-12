@@ -3,7 +3,7 @@
 {# Display the one-time private link inside the client record before EasyAdmin consumes flash messages. #}
 {% block flash_messages %}{% endblock %}
 {% block main %}
-  {% set decision_finale = client.status in ['yes', 'no'] %}
+  {% set decision_finale = client.status in ['yes', 'no'] or not client.active %}
 
   <div class="mb-3">
     <a href="{{ path('admin_client_index') }}" class="btn btn-outline-secondary">
@@ -53,8 +53,33 @@
   </section>
   {% endif %}
 
-  <p><strong>Statut :</strong> {{ client.statusLabel }} · <strong>Email :</strong> {{ client.email ?: 'Non renseigné' }}</p>
+  <p><strong>Statut :</strong> {{ client.statusLabel }} · <strong>Dossier :</strong> {{ client.active ? 'Actif' : 'Archivé' }} · <strong>Email :</strong> {{ client.email ?: 'Non renseigné' }}</p>
+  {% if client.contractEndedAt %}
+    <p><strong>Fin de relation :</strong> {{ client.contractEndedAt|date('d/m/Y', 'Europe/Paris') }} · <strong>Archivage :</strong> {{ client.archivedAt|date('d/m/Y', 'Europe/Paris') }}</p>
+  {% endif %}
   <p><strong>Référence Codial :</strong> {{ client.codialId ?: '—' }}</p>
+
+  {% if is_granted('ROLE_ADMIN') and client.active %}
+    <section class="card mb-4" aria-labelledby="close-contract-heading">
+      <div class="card-body">
+        <h2 id="close-contract-heading" class="h5">Clôturer la relation contractuelle</h2>
+        <p class="text-muted">Cette action fait passer le dossier dans l'archive normale.
+          Aucun justificatif n'est supprimé à cette étape.</p>
+        <form method="post" action="{{ path('admin_client_close_contract', {id: client.id}) }}">
+          <input type="hidden" name="_token" value="{{ csrf_token('archive_' ~ client.id) }}">
+          <div class="mb-3">
+            <label class="form-label" for="contract-ended-{{ client.id }}">Date de fin de relation</label>
+            <input id="contract-ended-{{ client.id }}" class="form-control" style="max-width: 240px"
+                   type="date" name="ended_at" max="{{ 'now'|date('Y-m-d', 'Europe/Paris') }}" required>
+          </div>
+          <button type="submit" class="btn btn-outline-warning"
+                  onclick="return confirm('Confirmer la clôture de la relation contractuelle et l’archivage du client ?');">
+            Clôturer et archiver
+          </button>
+        </form>
+      </div>
+    </section>
+  {% endif %}
   <h2>Décisions enregistrées</h2>
   {% if decisions is empty %}
     <p>Aucune réponse pour ce client.</p>
@@ -82,7 +107,8 @@
     'email_sent': 'Invitation envoyée',
     'email_failed': 'Échec de l’envoi',
     'decision_recorded': 'Décision enregistrée',
-    'evidence_downloaded': 'Justificatif téléchargé'
+    'evidence_downloaded': 'Justificatif téléchargé',
+    'client_archived': 'Client archivé'
   } %}
   {% set actor_labels = {'admin': 'Collaborateur', 'client': 'Client', 'system': 'Système'} %}
   {% if events is empty %}<p>Pas d'événements.</p>{% else %}
