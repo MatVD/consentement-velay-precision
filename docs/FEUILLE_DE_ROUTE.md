@@ -2,7 +2,7 @@
 
 **Référence :** audit technique et métier du 11 octobre 2026.  
 **Base Git :** `main` au commit `69abe51`.  
-**Méthode :** une phase à la fois, avec une branche dédiée, des commits ciblés, des tests, un compte rendu et **validation explicite avant la phase suivante**. Pas de push ni de fusion automatique dans `main`.
+**Méthode :** une phase à la fois, avec commits ciblés, tests, compte rendu et **validation explicite avant la suivante**. **Depuis la phase 3, les développements sont effectués directement sur `main` à la demande de l'utilisateur** (12 octobre 2026). Aucun push distant sans demande.
 
 ## Principes transversaux
 
@@ -53,7 +53,7 @@
 
 **Critères de fin de phase :** règles formalisées, protections testées, restauration documentée et démontrée ; validation métier/juridique explicite.
 
-**État :** en attente.
+**État :** protections techniques et gouvernance documentaire implémentées sur `main` (12 octobre 2026). **Clôture juridique et opérationnelle conditionnelle** : validation des textes/mentions et durées par Velay Précision ; destination externe, secret de production et test `selftest` depuis un terminal opérateur autorisé encore à réaliser. Phase 4 non commencée.
 
 ## Phase 4 — Préparation et mise en production
 
@@ -85,7 +85,7 @@
 | --- | --- | --- | --- | --- |
 | 1 | `feat/roadmap-phase-1-stabilisation` | Fusionnée dans `main` avec la phase 2 | 23 tests / 90 assertions lors de la phase 1 | Poursuite phase 2 autorisée |
 | 2 | `feat/roadmap-phase-2-data-ux` | Fusionnée dans `main` | 38 tests / 230 assertions, Twig/YAML/Doctrine/JS OK après fusion | Fusion effectuée le 12/10/2026 |
-| 3 | À définir | En attente | — | — |
+| 3 | `main` | Socle technique implémenté, validations externes en attente | Tests sécurité + chiffrement + PostgreSQL fictif (voir bilan) | Revue RGPD / exploitation requise |
 | 4 | À définir | En attente | — | — |
 | 5 | À définir | En attente | — | — |
 
@@ -183,7 +183,7 @@ docker compose -f compose.yaml -f compose.dev.yaml exec -T app php bin/console d
 - Inspection HTML en Brave : index Clients, nouveau client, modification, suivi / preuves, import CSV, accueil et confirmation ; ouverture du filtre vérifiée.
 - Le formulaire public et le cas d'un lien invalide sont également couverts par des tests HTTP.
 
-**Limites et contrôle utilisateur restant :** les outils navigateur disponibles permettent la navigation et l'inspection du DOM, mais **pas un contrôle visuel effectif à toutes les largeurs d'écran**. La checklist des tailles **320 / 375 / 390 / 768 / 1024 / 1440 px** et des parcours est consignée dans `docs/RESPONSIVE_QA.md`. La fusion dans `main` a été effectuée le 12 octobre 2026 ; le lancement de la phase 3 reste soumis à une instruction distincte.
+**Limites et contrôle utilisateur restant :** les outils navigateur disponibles permettent la navigation et l'inspection du DOM, mais **pas un contrôle visuel effectif à toutes les largeurs d'écran**. La checklist des tailles **320 / 375 / 390 / 768 / 1024 / 1440 px** et des parcours est consignée dans `docs/RESPONSIVE_QA.md`. La fusion dans `main` a été effectuée le 12 octobre 2026 ; la phase 3 a été ensuite autorisée et effectuée sur `main`.
 
 ## Clôture et contrôle après fusion — 12 octobre 2026
 
@@ -193,4 +193,27 @@ docker compose -f compose.yaml -f compose.dev.yaml exec -T app php bin/console d
 - Les développements ultérieurs présents sur `feat/client-link-on-detail` ont été préservés, mais **ne font pas partie** de cette fusion. Ils devront suivre leur propre revue et intégration.
 - Aucun `push` effectué : aucun dépôt distant n'était configuré au moment du contrôle.
 - **Recette complémentaire non automatisée** : rendu réel à 320/375/390/768/1024/1440 px, rotation mobile/tablette et ouverture de l'export dans Excel. Elle demeure dans `docs/RESPONSIVE_QA.md` ; les contrôles automatiques ne prouvent pas l'absence totale de défauts visuels.
-- Les phases 3 à 5 ne sont pas commencées.
+- À la date de cette première fusion, les phases 3 à 5 n'étaient pas commencées. Les 7 commits de `feat/client-link-on-detail` ont ensuite été fusionnés dans `main` au commit `6c8d6c8`, puis la phase 3 a commencé.
+
+## Phase 3 — Bilan technique et portes de validation (12 octobre 2026)
+
+**Travail effectué directement sur `main` (sans branche) :**
+
+- `64a400f` — suppression de la promotion systématique à `ROLE_ADMIN`, hiérarchie `ROLE_ADMIN / ROLE_OPERATOR / ROLE_AUDITOR`, contrôles d'accès sur les actions sensibles et le CSV, en-têtes HTTP anti-cache/anti-fuite et audit des téléchargements PDF.
+- `5cc22a3` — sauvegarde conjointe PostgreSQL + fichiers de preuve, chiffrement authentifié avec libsodium, commande de vérification, restauration isolée et tests de cryptographie/validation d'archive.
+- `906febf` — création contrôlée d'utilisateurs à rôle explicite, inventaire des données sans suppression, restrictions d'interface, tests CSRF/expiration/IP et documentation RGPD opérationnelle.
+
+**Tests effectués après les modifications :**
+
+- PHPUnit intégration + unitaires, base PostgreSQL de recette isolée : **59 tests, 405 assertions, zéro échec**.
+- **5 tests Python** de validation des archives, noms de bases, empreintes et chemins.
+- Twig : **14 templates** valides ; YAML : **12 fichiers** valides ; conteneur Symfony et schéma Doctrine synchronisés.
+- Simulation réelle `pg_dump -Fc` / `pg_restore` sur deux bases PostgreSQL **fictives**, ligne de justificatif retrouvée ; les bases et le dump de test ont été supprimés.
+- Une tentative du `selftest` de sauvegarde chiffrée end-to-end a été bloquée par le pont Hermes (accès de Docker Compose lancé par Python à `.env` refusé). **Ne pas annoncer l'outil de bout en bout comme validé** tant qu'il n'a pas été exécuté depuis un terminal de maintenance autorisé.
+- Aucune migration ni purge de données clients existants ; aucun SMTP réel ni déploiement extérieur.
+
+**Documents de référence :** `docs/GOUVERNANCE_SECURITE.md`, `docs/SAUVEGARDES.md`, et le présent journal.
+
+**Arbitrages bloquants avant mise en production :** texte et notice RGPD approuvés, responsable de traitement et point de contact établis, durées de conservation motivées, affectation des rôles validée, stockage de sauvegarde externe et secret sécurisé choisis, restauration chiffrée testée intégralement en environnement autorisé. Aucune de ces décisions n'est imposée par le code.
+
+**Statut :** implémentation technique livrée sur `main`, **validation juridique et opérationnelle incomplète**. Arrêt après phase 3 dans l'attente de l'avis utilisateur. Les phases 4 et 5 ne sont pas démarrées.
