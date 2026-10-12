@@ -29,10 +29,10 @@
     outline: 3px solid #4b97da;
     outline-offset: 2px;
 }
-.ea .table.datagrid td[data-column='quickActions'] .btn { min-width: 36px; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; }
+.ea .table.datagrid td[data-column='quickActions'] .btn { min-width: 36px; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; }
 .ea .table.datagrid td[data-column='quickActions'] [role='group'] { display: flex !important; flex-wrap: wrap; }
-/* Real, selectable button captions: icon-only on desktop, visible on touch widths. */
-.ea .client-action-label { display: none; }
+/* Show icon and text on tablet/desktop; retain the accessible name when mobile hides the text. */
+.ea .client-action-label { display: inline; }
 /* Card toggles only appear in the mobile client list. */
 .ea .client-card-toggle { display: none; }
 
@@ -45,7 +45,7 @@
     .ea .content-header .content-header-title { width: 100%; min-width: 0; overflow-wrap: anywhere; }
     .ea .content-header .page-actions { width: 100%; display: flex; flex-wrap: wrap; gap: .5rem; }
     .ea .content-header .page-actions .btn { min-height: 44px; white-space: normal; }
-    .ea .client-action-label { display: inline; }
+    .ea .client-action-label { display: none; }
     .ea .content-body { max-width: 100%; }
     .ea .form-control, .ea .form-select, .ea input[type='search'], .ea input[type='file'] { font-size: 16px; }
     .ea .btn { max-width: 100%; }

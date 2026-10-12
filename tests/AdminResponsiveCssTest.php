@@ -30,14 +30,19 @@ final class AdminResponsiveCssTest extends TestCase
         self::assertStringNotContainsString('.ea.page-index', $css);
     }
 
-    public function testMobileActionLabelsAreRealHtmlInsteadOfGeneratedCssContent(): void
+    public function testClientActionsShowTextOnTabletAndDesktopButIconsOnlyOnMobile(): void
     {
         $css = $this->stylesheet();
         $twig = file_get_contents(dirname(__DIR__).'/templates/admin/client_quick_actions.html.twig');
 
         self::assertIsString($twig);
-        self::assertStringContainsString('.ea .client-action-label { display: none; }', $css);
         self::assertStringContainsString('.ea .client-action-label { display: inline; }', $css);
+        self::assertMatchesRegularExpression(
+            '~@media \\(max-width: 767\\.98px\\) \\{.*?\\.ea \\.client-action-label \\{ display: none; \\}~s',
+            $css
+        );
+        self::assertSame(1, substr_count($css, '.ea .client-action-label { display: inline; }'));
+        self::assertSame(1, substr_count($css, '.ea .client-action-label { display: none; }'));
         self::assertStringNotContainsString(".btn::after { content: 'Email'; }", $css);
         foreach (['Email', 'Accompagner'] as $label) {
             self::assertStringContainsString('<span class="client-action-label">'.$label.'</span>', $twig);
