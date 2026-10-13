@@ -74,7 +74,7 @@
 
 **Critères de fin de phase :** préproduction validée et processus d'exploitation documenté ; mise en service distinctement approuvée.
 
-**État :** en attente.
+**État :** **planification documentée le 13 octobre 2026, sans achat, sans environnement créé et sans déploiement**. Références : `docs/phase4/00_DECISIONS_INFRASTRUCTURE.md`, `docs/phase4/01_PLAN_PREPRODUCTION.md` et `docs/phase4/02_RECETTE_GO_NO_GO.md`. Fournisseur, budget, DNS, accès Microsoft Entra et responsabilités restent à approuver avant exécution.
 
 ## Phase 5 — Évolutions métier (V2 à arbitrer)
 
@@ -95,7 +95,7 @@
 | 1 | `feat/roadmap-phase-1-stabilisation` | Fusionnée dans `main` avec la phase 2 | 23 tests / 90 assertions lors de la phase 1 | Poursuite phase 2 autorisée |
 | 2 | `feat/roadmap-phase-2-data-ux` | Fusionnée dans `main` | 38 tests / 230 assertions, Twig/YAML/Doctrine/JS OK après fusion | Fusion effectuée le 12/10/2026 |
 | 3 | `main` | Socle technique implémenté, validations externes en attente | Tests sécurité + chiffrement + PostgreSQL fictif (voir bilan) | Revue RGPD / exploitation requise |
-| 4 | À définir | En attente | — | — |
+| 4 | `main` | Architecture et plan de préproduction documentés ; aucune infrastructure créée | Revue du code et documentation des critères GO/NO-GO | Décisions d'achat/DNS/Graph et validation métier requises |
 | 5 | À définir | En attente | — | — |
 
 ## Résultats et reprise — phase 1 (11 octobre 2026)
