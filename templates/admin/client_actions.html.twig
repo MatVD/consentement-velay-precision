@@ -1,5 +1,12 @@
 {% extends '@EasyAdmin/page/content.html.twig' %}
 {% block content_title %}Fiche client — {{ client.name }}{% endblock %}
+{% block configured_stylesheets %}
+  {{ parent() }}
+  {% if is_granted('ROLE_OPERATOR') %}
+    {# A dedicated versioned asset prevents browsers from reusing older panel styles. #}
+    <link rel="stylesheet" href="{{ asset('assets/client-actions-drawer.css') }}?v=20261013-2">
+  {% endif %}
+{% endblock %}
 {% block page_actions %}
   {% if is_granted('ROLE_OPERATOR') %}
     <button type="button" id="client-actions-trigger"
@@ -92,6 +99,6 @@
   {% endif %}
   <script src="{{ asset('assets/client-link-copy.js') }}" defer></script>
   {% if is_granted('ROLE_OPERATOR') %}
-    <script src="{{ asset('assets/client-actions-drawer.js') }}" defer></script>
+    <script src="{{ asset('assets/client-actions-drawer.js') }}?v=20261013-2" defer></script>
   {% endif %}
 {% endblock %}

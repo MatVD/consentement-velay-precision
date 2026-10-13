@@ -218,7 +218,8 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertCount(1, $crawler->filter('dialog#client-actions-drawer form[action$="/close-contract"]'));
         self::assertCount(0, $crawler->filter('#main > section.card'));
         self::assertCount(1, $crawler->filter('dialog#client-actions-drawer button[data-client-actions-close][aria-label="Fermer le panneau"]'));
-        self::assertCount(1, $crawler->filter('script[src$="/assets/client-actions-drawer.js"]'));
+        self::assertCount(1, $crawler->filter('link[rel="stylesheet"][href*="/assets/client-actions-drawer.css?v=20261013-2"]'));
+        self::assertCount(1, $crawler->filter('script[src*="/assets/client-actions-drawer.js?v=20261013-2"]'));
         $form = $crawler->filter('dialog#client-actions-drawer form[action$="/onsite"]')->form();
         $browser->submit($form);
         self::assertResponseRedirects('/admin/clients/'.$client->getId().'/actions');

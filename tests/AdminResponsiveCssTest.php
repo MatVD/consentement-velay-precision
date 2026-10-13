@@ -49,15 +49,24 @@ final class AdminResponsiveCssTest extends TestCase
         }
     }
 
-    public function testClientDetailDrawerFitsMobileAndHasNativeModalBehaviour(): void
+    public function testClientDetailDrawerIsAnchoredToRightAndFillsScreenHeight(): void
     {
-        $css = $this->stylesheet();
+        $css = file_get_contents(dirname(__DIR__).'/public/assets/client-actions-drawer.css');
         $js = file_get_contents(dirname(__DIR__).'/public/assets/client-actions-drawer.js');
 
+        self::assertIsString($css);
         self::assertIsString($js);
-        self::assertStringContainsString('dialog.client-actions-drawer[open]', $css);
-        self::assertStringContainsString('width: min(35rem, 100vw);', $css);
-        self::assertStringContainsString('width: 100vw;', $css);
+        self::assertStringContainsString('body.ea #client-actions-drawer.client-actions-drawer', $css);
+        self::assertStringContainsString('position: fixed !important;', $css);
+        self::assertStringContainsString('top: 0 !important;', $css);
+        self::assertStringContainsString('right: 0 !important;', $css);
+        self::assertStringContainsString('left: auto !important;', $css);
+        self::assertStringContainsString('margin: 0 !important;', $css);
+        self::assertStringContainsString('height: 100dvh !important;', $css);
+        self::assertStringContainsString('width: min(32rem, 100vw) !important;', $css);
+        self::assertStringContainsString('width: 100vw !important;', $css);
+        self::assertStringContainsString('client-drawer-from-right', $css);
+        self::assertStringContainsString('.client-actions-drawer__header', $css);
         self::assertStringContainsString('.content-header:has(.client-actions-trigger)', $css);
         self::assertStringContainsString('drawer.showModal()', $js);
         self::assertStringContainsString('drawer.close()', $js);

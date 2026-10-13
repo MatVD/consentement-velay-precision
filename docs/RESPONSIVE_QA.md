@@ -51,16 +51,35 @@ continuent de contrôler la disponibilité des actions.
 
 **Points de recette sur mobile/tablette :**
 - [ ] Le bouton « … » reste dans l'en-tête à 320 / 375 / 390 / 768 px ;
-- [ ] Le panneau occupe toute la largeur en mobile, et un volet de 35 rem maximum sur desktop ;
+- [ ] Le panneau occupe toute la largeur en mobile, et un volet de 32 rem maximum sur desktop ;
 - [ ] Le contenu défile verticalement quand l'écran est bas et les boutons restent cliquables ;
 - [ ] La génération d'un lien ouvre automatiquement le panneau pour afficher Copier / Ouvrir ;
 - [ ] Un auditeur ne voit aucun bouton d'action ; un opérateur voit uniquement le lien ; un admin voit les deux encadrés si le dossier est actif ;
 - [ ] Les liens expirés ou les décisions définitives ne peuvent toujours pas générer de nouveau lien.
 
 Les tests d'intégration couvrent les permissions, les formulaires et le
-contenu HTML du panneau. La capture de Brave peut être refusée sur les pages
-contenant des champs sensibles : une inspection visuelle sur appareils réels
-demeure nécessaire.
+contenu HTML du panneau.
+
+**Correctif du 13/10/2026 :** sur une capture réelle, le `<dialog>` apparaissait
+au centre avec une bordure noire et une croix mal alignée : les nouveaux
+styles du panneau n'étaient pas effectivement appliqués dans Brave, notamment
+du fait de la mise en cache du CSS global. Les règles sont maintenant isolées
+dans `public/assets/client-actions-drawer.css`, chargées sur cette seule page
+avec une URL versionnée après les styles EasyAdmin. Le positionnement à droite,
+les dimensions, les cartes et l'en-tête sont appliqués indépendamment du
+cache de `admin.css`.
+
+**Vérification visuelle non sensible dans Brave :** sur une page de démonstration
+temporaire avec les mêmes feuilles CSS, au viewport `1589 × 854`, le volet
+avait une largeur de **512 px**, une hauteur de **854 px**, un bord droit à
+**0 px de l'écran**, une position calculée `fixed` et **aucune bordure noire**.
+La capture de ce rendu confirmait aussi une croix alignée en haut à droite
+et les deux cartes aux couleurs EasyAdmin. Les fichiers de démonstration
+temporaires ont été supprimés après le contrôle.
+
+La capture de Brave peut rester refusée sur les fiches clients réelles
+contenant des champs sensibles : la recette visuelle sur appareils mobiles
+et tablettes reste à confirmer.
 
 ## Audit correctif — retour utilisateur du 11 octobre 2026
 
