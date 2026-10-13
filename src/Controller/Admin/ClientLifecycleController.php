@@ -3,6 +3,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Client;
 use App\Entity\ClientLifecycleEvent;
+use App\Entity\RetentionAggregate;
 use App\Service\ClientLifecycleService;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
@@ -37,6 +38,15 @@ final class ClientLifecycleController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_client_actions', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
+    }
+
+    #[IsGranted('ROLE_ADMIN')]
+    #[AdminRoute(path: '/lifecycle/statistics', name: 'lifecycle_statistics', options: ['methods' => ['GET']])]
+    public function statistics(EntityManagerInterface $em): Response
+    {
+        return $this->render('admin/lifecycle_statistics.html.twig', [
+            'aggregates' => $em->getRepository(RetentionAggregate::class)->findBy([], ['period' => 'DESC']),
+        ], new Response(headers: ['Cache-Control' => 'private, no-store']));
     }
 
     #[IsGranted('ROLE_AUDITOR')]

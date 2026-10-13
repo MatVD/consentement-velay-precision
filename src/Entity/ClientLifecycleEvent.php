@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 #[ORM\Table(name: 'client_lifecycle_event')]
 #[ORM\Index(name: 'IDX_CLIENT_LIFECYCLE_EVENT_TIME', columns: ['created_at'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_LIFECYCLE_MONTH_TYPE', columns: ['event_type', 'created_at'])]
 class ClientLifecycleEvent
 {
     public const ARCHIVED = 'archived';
@@ -32,7 +33,10 @@ class ClientLifecycleEvent
             throw new \InvalidArgumentException('Événement d’archivage inconnu.');
         }
         $this->eventType = $eventType;
-        $this->createdAt = $at ?? new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        // Coarse month bucket; no timestamp specific to an individual client.
+        $now = $at ?? new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        $this->createdAt = $now->setTimezone(new \DateTimeZone('UTC'))
+            ->modify('first day of this month')->setTime(0, 0);
     }
 
     public function getId(): ?int { return $this->id; }

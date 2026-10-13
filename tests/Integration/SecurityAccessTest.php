@@ -88,6 +88,7 @@ final class SecurityAccessTest extends WebTestCase
             '/admin/client/'.$client->getId().'/edit',
             '/admin/import',
             '/admin/export.csv',
+            '/admin/lifecycle/statistics',
             '/admin/clients/'.$client->getId().'/assisted',
         ] as $route) {
             $browser->request('GET', $route);
@@ -116,6 +117,8 @@ final class SecurityAccessTest extends WebTestCase
         self::assertResponseStatusCodeSame(403);
         $browser->request('GET', '/admin/export.csv');
         self::assertResponseStatusCodeSame(403);
+        $browser->request('GET', '/admin/lifecycle/statistics');
+        self::assertResponseStatusCodeSame(403);
     }
 
     public function testLegacyAdminKeepsPermissions(): void
@@ -128,6 +131,8 @@ final class SecurityAccessTest extends WebTestCase
         $browser->request('GET', '/admin/client/new');
         self::assertResponseIsSuccessful();
         $browser->request('GET', '/admin/import');
+        self::assertResponseIsSuccessful();
+        $browser->request('GET', '/admin/lifecycle/statistics');
         self::assertResponseIsSuccessful();
     }
 

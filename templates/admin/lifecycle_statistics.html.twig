@@ -1,0 +1,25 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+{% block content_title %}Archive statistique anonymisée{% endblock %}
+{% block main %}
+  <p>Seuls des totaux mensuels non rattachés à des dossiers sont présentés. Les groupes
+    trop petits ne sont pas comptabilisés publiquement afin de limiter les risques de
+    réidentification. Aucun nom, email, référence Codial, PDF ou choix individuel n'est conservé ici.</p>
+  <div class="responsive-data-table" role="region" aria-label="Totaux archivés" tabindex="0">
+    <table class="table table-striped">
+      <thead><tr><th>Mois de fin de contrat</th><th>Total</th><th>Suppression prévue</th></tr></thead>
+      <tbody>
+        {% for item in aggregates %}
+          <tr>
+            <td data-label="Période">{{ item.period }}</td>
+            <td data-label="Total">{{ item.clientTotal is null ? 'Effectif insuffisant : non conservé' : item.clientTotal }}</td>
+            <td data-label="Suppression prévue">{{ item.expiresOn|date('m/Y', 'Europe/Paris') }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="3">Aucune statistique anonymisée disponible.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="text-muted">La validation de l'anonymisation et la suppression irréversible
+  restent soumises au responsable de traitement. Aucune tâche de purge n'est activée par défaut.</p>
+{% endblock %}

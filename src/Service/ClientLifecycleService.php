@@ -9,7 +9,10 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final class ClientLifecycleService
 {
-    public function __construct(private readonly EntityManagerInterface $em) {}
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly ClientLifecycleHistoryWriter $history,
+    ) {}
 
     /**
      * Explicit, reversible closure step. The original decision and PDF are
@@ -22,14 +25,13 @@ final class ClientLifecycleService
             throw new \DomainException('La date de fin du contrat ne peut pas être future.');
         }
 
-        $this->em->wrapInTransaction(static function (EntityManagerInterface $em) use ($client, $endedAt, $now): void {
+        $this->em->wrapInTransaction(function (EntityManagerInterface $em) use ($client, $endedAt, $now): void {
             $em->refresh($client, LockMode::PESSIMISTIC_WRITE);
             $client->archiveContract($endedAt, $now);
             $em->persist(new AuditEvent($client, null, 'client_archived', 'admin', [
                 'contract_ended_at' => $endedAt->format('Y-m-d'),
             ]));
-            // Global history intentionally has no client ID/name, email or actor.
-            $em->persist(new ClientLifecycleEvent(ClientLifecycleEvent::ARCHIVED, $now));
+            $this->history->record($em->getConnection(), ClientLifecycleEvent::ARCHIVED, $now);
         });
     }
 }
