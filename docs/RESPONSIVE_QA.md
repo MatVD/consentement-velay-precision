@@ -40,6 +40,28 @@ Utiliser l’émulation responsive des outils de développement de Brave/Chrome 
 
 **État 11 octobre 2026 :** inspection Brave desktop effectuée sur l'administration en français et sur la présence des styles/contrôles. Les largeurs 320/375/390/768/1024/1440 px et la rotation sur appareils réels restent à vérifier manuellement. Ne pas enregistrer de décision réelle pour tester l'affichage ; utiliser un client de test.
 
+## Ajustement avant la phase 4 — fiche client (13 octobre 2026)
+
+Les deux anciennes cartes présentes dans la page **Fiche client** sont maintenant
+regroupées dans un **panneau latéral droit**, accessible via le bouton « … » du
+titre. Les informations client, les décisions et l'historique restent visibles
+sur la page. Le panneau utilise un `<dialog>` natif : navigation clavier,
+fermeture par Échap ou croix, clic sur le fond et retour du focus. Les rôles
+continuent de contrôler la disponibilité des actions.
+
+**Points de recette sur mobile/tablette :**
+- [ ] Le bouton « … » reste dans l'en-tête à 320 / 375 / 390 / 768 px ;
+- [ ] Le panneau occupe toute la largeur en mobile, et un volet de 35 rem maximum sur desktop ;
+- [ ] Le contenu défile verticalement quand l'écran est bas et les boutons restent cliquables ;
+- [ ] La génération d'un lien ouvre automatiquement le panneau pour afficher Copier / Ouvrir ;
+- [ ] Un auditeur ne voit aucun bouton d'action ; un opérateur voit uniquement le lien ; un admin voit les deux encadrés si le dossier est actif ;
+- [ ] Les liens expirés ou les décisions définitives ne peuvent toujours pas générer de nouveau lien.
+
+Les tests d'intégration couvrent les permissions, les formulaires et le
+contenu HTML du panneau. La capture de Brave peut être refusée sur les pages
+contenant des champs sensibles : une inspection visuelle sur appareils réels
+demeure nécessaire.
+
 ## Audit correctif — retour utilisateur du 11 octobre 2026
 
 ### Défaut avéré : libellés superposés dans les fiches Clients

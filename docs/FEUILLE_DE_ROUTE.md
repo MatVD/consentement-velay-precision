@@ -55,6 +55,15 @@
 
 **État :** protections techniques et gouvernance documentaire implémentées sur `main` (12 octobre 2026). **Clôture juridique et opérationnelle conditionnelle** : validation des textes/mentions et durées par Velay Précision ; destination externe, secret de production et test `selftest` depuis un terminal opérateur autorisé encore à réaliser. Phase 4 non commencée.
 
+## Ajustement demandé avant la phase 4 (13 octobre 2026)
+
+- Fiche client : bouton « … » dans l'en-tête EasyAdmin ; panneau natif `dialog` coulissant depuis la droite, avec **Lien individuel** et **Clôture de la relation contractuelle**.
+- Les informations, décisions, justificatifs et historique demeurent dans le corps de page.
+- Les rôles (opérateur / administrateur / auditeur), les validations CSRF, les statuts bloquants et le parcours POST → redirection sont préservés.
+- Après génération d'un lien, le panneau s'ouvre automatiquement pour présenter le lien **Copier / Ouvrir**.
+- Contrôles et tests HTML/JS/CSS : voir `docs/RESPONSIVE_QA.md` ; recette visuelle en tailles réelles à confirmer.
+- Aucun développement ni déploiement de la phase 4 n'a été commencé.
+
 ## Phase 4 — Préparation et mise en production
 
 - Définir l'hébergement et la topologie HTTPS/reverse-proxy, DNS, secrets, SMTP et délivrabilité.

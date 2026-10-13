@@ -68,7 +68,7 @@ Docker Engine / Docker Desktop et le plugin `docker compose` fonctionnel ; accè
    - Administration : http://localhost:8081/admin
    - Emails de test (Mailpit) : http://localhost:8025
 
-7. Dans EasyAdmin (interface en français), ajouter un client : renseigner l'**entreprise / client**, l'email d'invitation et, si disponibles, le prénom, le nom et la fonction de son représentant. Depuis la liste **Clients**, utiliser les icônes **Email** ou **Accompagner**. La génération de **lien individuel** est disponible dans la **fiche client** (menu d'actions « ... »), avec copie du lien valable 24 heures. Les permissions affichées dépendent du rôle : l'auditeur peut consulter sans modifier.
+7. Dans EasyAdmin (interface en français), ajouter un client : renseigner l'**entreprise / client**, l'email d'invitation et, si disponibles, le prénom, le nom et la fonction de son représentant. Depuis la liste **Clients**, utiliser les icônes **Email** ou **Accompagner**. La fiche client comporte un bouton **« … »** à droite du titre : il ouvre un **panneau latéral depuis la droite** contenant la **génération d'un lien individuel** et, pour les administrateurs, la **clôture contractuelle**. Un lien généré (valable 24 heures) est présenté automatiquement dans ce panneau avec les options **Copier** et **Ouvrir**. Le panneau se ferme par sa croix, Échap ou en cliquant à l'extérieur. Les permissions affichées dépendent du rôle : l'auditeur peut consulter sans modifier.
 
 ### Import CSV
 
@@ -101,7 +101,7 @@ Le lien est expiré après 14 jours s'il est envoyé par mail, ou 24 heures s'il
 
 ### Fin de relation et archivage
 
-Un administrateur peut ouvrir la **fiche client**, saisir la **date de fin de relation contractuelle**, puis utiliser « Clôturer et archiver ». Le client passe immédiatement dans l'état **Archivé** et devient non modifiable ; ses éventuels anciens liens ne permettent plus de répondre. Les décisions Oui/Non et PDF restent inchangés. La liste Clients peut être filtrée selon l'état du dossier.
+Un administrateur peut ouvrir les **actions « … » de la fiche client**, saisir la **date de fin de relation contractuelle** dans le panneau latéral, puis utiliser « Clôturer et archiver ». Le client passe immédiatement dans l'état **Archivé** et devient non modifiable ; ses éventuels anciens liens ne permettent plus de répondre. Les décisions Oui/Non et PDF restent inchangés. La liste Clients peut être filtrée selon l'état du dossier.
 
 Le menu **Historique des archives** affiche à tous les collaborateurs autorisés uniquement les types de transition regroupés **par mois**, sans identifiant client. L'option A a été retenue : **1 an d'archive normale, puis uniquement des statistiques mensuelles agrégées accessibles aux administrateurs jusqu'à +3 ans**. Après +1 an, la suppression de la fiche et des PDF est irréversible. Le traitement est implémenté mais **désactivé par défaut** : `app:retention:process` effectue uniquement une simulation, sauf activation serveur et confirmations explicites. Aucun cron destructif n'est planifié. Voir `docs/CYCLE_VIE_CLIENTS.md` avant de mettre en exploitation.
 
