@@ -1,9 +1,21 @@
 {% extends '@EasyAdmin/page/content.html.twig' %}
 {% block content_title %}Fiche client — {{ client.name }}{% endblock %}
+{% block page_actions %}
+  {% if is_granted('ROLE_OPERATOR') %}
+    <button type="button" id="client-actions-trigger"
+            class="btn btn-outline-secondary client-actions-trigger"
+            data-client-actions-open aria-controls="client-actions-drawer"
+            aria-haspopup="dialog" aria-label="Ouvrir les actions du client"
+            title="Actions du client">
+      <i class="fa fa-ellipsis" aria-hidden="true"></i>
+    </button>
+  {% endif %}
+{% endblock %}
 {# Display the one-time private link inside the client record before EasyAdmin consumes flash messages. #}
 {% block flash_messages %}{% endblock %}
 {% block main %}
   {% set decision_finale = client.status in ['yes', 'no'] or not client.active %}
+  {% set onsite_links = app.flashes('onsite_link') %}
 
   <div class="mb-3">
     <a href="{{ path('admin_client_index') }}" class="btn btn-outline-secondary">
@@ -11,24 +23,6 @@
     </a>
   </div>
 
-  {% for link in app.flashes('onsite_link') %}
-    <div class="alert alert-info mb-3 client-link-flash position-relative pe-5" role="status">
-      <button type="button" class="btn-close position-absolute top-0 end-0 p-3"
-              aria-label="Fermer le message de lien présentiel" title="Fermer"
-              data-bs-dismiss="alert"></button>
-      <strong>Lien individuel généré (valable 24 heures)</strong>
-      <p class="mb-2">Copiez ce lien pour le transmettre ou le présenter au client :</p>
-      <div class="input-group">
-        <input id="client-onsite-link-{{ loop.index }}" type="text" class="form-control"
-               value="{{ link }}" readonly aria-label="Lien individuel à copier" onfocus="this.select()">
-        <button type="button" class="btn btn-outline-secondary" data-copy-link="client-onsite-link-{{ loop.index }}">
-          <i class="fa fa-copy" aria-hidden="true"></i> Copier
-        </button>
-        <a href="{{ link }}" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">Ouvrir</a>
-      </div>
-      <span id="client-onsite-link-{{ loop.index }}-status" class="visually-hidden" role="status" aria-live="polite"></span>
-    </div>
-  {% endfor %}
   {% for type, messages in app.flashes %}
     {% for message in messages %}
       <div class="alert alert-{{ type == 'danger' ? 'danger' : (type == 'warning' ? 'warning' : 'success') }}" role="status">{{ message }}</div>
@@ -36,21 +30,11 @@
   {% endfor %}
 
   {% if is_granted('ROLE_OPERATOR') %}
-  <section class="card mb-4" aria-labelledby="client-invitation-heading">
-    <div class="card-body">
-      <h2 id="client-invitation-heading" class="h5">Lien individuel pour le client</h2>
-      <p class="text-muted mb-3">Générez un lien personnel valable 24 heures pour que le client renseigne son choix concernant la signature électronique.</p>
-      <form method="post" action="{{ path('admin_client_onsite', {id: client.id}) }}">
-        <input type="hidden" name="_token" value="{{ csrf_token('onsite_' ~ client.id) }}">
-        <button type="submit" class="btn btn-primary" {% if decision_finale %}disabled{% endif %}>
-          <i class="fa fa-link" aria-hidden="true"></i> Générer un lien
-        </button>
-      </form>
-      {% if decision_finale %}
-        <p class="text-muted mt-2 mb-0">Une décision définitive est déjà enregistrée : aucun nouveau lien ne peut être généré.</p>
-      {% endif %}
-    </div>
-  </section>
+    {{ include('admin/_client_actions_drawer.html.twig', {
+      client: client,
+      decision_finale: decision_finale,
+      onsite_links: onsite_links
+    }, with_context = false) }}
   {% endif %}
 
   <p><strong>Statut :</strong> {{ client.statusLabel }} · <strong>Dossier :</strong> {{ client.active ? 'Actif' : 'Archivé' }} · <strong>Email :</strong> {{ client.email ?: 'Non renseigné' }}</p>
@@ -59,27 +43,6 @@
   {% endif %}
   <p><strong>Référence Codial :</strong> {{ client.codialId ?: '—' }}</p>
 
-  {% if is_granted('ROLE_ADMIN') and client.active %}
-    <section class="card mb-4" aria-labelledby="close-contract-heading">
-      <div class="card-body">
-        <h2 id="close-contract-heading" class="h5">Clôturer la relation contractuelle</h2>
-        <p class="text-muted">Cette action fait passer le dossier dans l'archive normale.
-          Aucun justificatif n'est supprimé à cette étape.</p>
-        <form method="post" action="{{ path('admin_client_close_contract', {id: client.id}) }}">
-          <input type="hidden" name="_token" value="{{ csrf_token('archive_' ~ client.id) }}">
-          <div class="mb-3">
-            <label class="form-label" for="contract-ended-{{ client.id }}">Date de fin de relation</label>
-            <input id="contract-ended-{{ client.id }}" class="form-control" style="max-width: 240px"
-                   type="date" name="ended_at" max="{{ 'now'|date('Y-m-d', 'Europe/Paris') }}" required>
-          </div>
-          <button type="submit" class="btn btn-outline-warning"
-                  onclick="return confirm('Confirmer la clôture de la relation contractuelle et l’archivage du client ?');">
-            Clôturer et archiver
-          </button>
-        </form>
-      </div>
-    </section>
-  {% endif %}
   <h2>Décisions enregistrées</h2>
   {% if decisions is empty %}
     <p>Aucune réponse pour ce client.</p>
@@ -128,4 +91,7 @@
     </div>
   {% endif %}
   <script src="{{ asset('assets/client-link-copy.js') }}" defer></script>
+  {% if is_granted('ROLE_OPERATOR') %}
+    <script src="{{ asset('assets/client-actions-drawer.js') }}" defer></script>
+  {% endif %}
 {% endblock %}

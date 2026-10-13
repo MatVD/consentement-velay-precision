@@ -81,6 +81,8 @@ final class SecurityAccessTest extends WebTestCase
         self::assertSelectorNotExists('td[data-column="quickActions"] form[action$="/email"]');
         $browser->request('GET', '/admin/clients/'.$client->getId().'/actions');
         self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('button[data-client-actions-open]');
+        self::assertSelectorNotExists('dialog[data-client-actions-drawer]');
         self::assertSelectorNotExists('form[action$="/onsite"]');
 
         foreach ([
@@ -109,7 +111,16 @@ final class SecurityAccessTest extends WebTestCase
         $browser = static::createClient();
         $em = static::getContainer()->get('doctrine.orm.entity_manager');
         $operator = $this->saveUser($em, 'operateur@example.test', ['ROLE_OPERATOR']);
+        $client = (new Client())->setName('Commerce géré')->setEmail('contact@example.test');
+        $em->persist($client);
+        $em->flush();
         $browser->loginUser($operator);
+
+        $browser->request('GET', '/admin/clients/'.$client->getId().'/actions');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('button[data-client-actions-open]');
+        self::assertSelectorExists('dialog[data-client-actions-drawer] form[action$="/onsite"]');
+        self::assertSelectorNotExists('dialog[data-client-actions-drawer] form[action$="/close-contract"]');
 
         $browser->request('GET', '/admin/client/new');
         self::assertResponseIsSuccessful();

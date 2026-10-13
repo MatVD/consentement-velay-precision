@@ -212,15 +212,23 @@ final class AdminWorkflowTest extends WebTestCase
         self::assertCount(0, $crawler->filter('td[data-column="quickActions"] form[action$="/onsite"]'));
         $crawler = $browser->request('GET', '/admin/clients/'.$client->getId().'/actions');
         self::assertResponseIsSuccessful();
-        $form = $crawler->filter('form[action$="/onsite"]')->form();
+        self::assertCount(1, $crawler->filter('button#client-actions-trigger[data-client-actions-open][aria-controls="client-actions-drawer"]'));
+        self::assertCount(1, $crawler->filter('dialog#client-actions-drawer[data-client-actions-drawer][aria-labelledby="client-actions-title"]'));
+        self::assertCount(1, $crawler->filter('dialog#client-actions-drawer form[action$="/onsite"]'));
+        self::assertCount(1, $crawler->filter('dialog#client-actions-drawer form[action$="/close-contract"]'));
+        self::assertCount(0, $crawler->filter('#main > section.card'));
+        self::assertCount(1, $crawler->filter('dialog#client-actions-drawer button[data-client-actions-close][aria-label="Fermer le panneau"]'));
+        self::assertCount(1, $crawler->filter('script[src$="/assets/client-actions-drawer.js"]'));
+        $form = $crawler->filter('dialog#client-actions-drawer form[action$="/onsite"]')->form();
         $browser->submit($form);
         self::assertResponseRedirects('/admin/clients/'.$client->getId().'/actions');
         $crawler = $browser->followRedirect();
 
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('Lien individuel généré', $crawler->text());
-        self::assertCount(1, $crawler->filter('.client-link-flash button[data-copy-link]'));
-        self::assertCount(1, $crawler->filter('.client-link-flash input[readonly]'));
+        self::assertCount(1, $crawler->filter('dialog#client-actions-drawer[data-client-actions-auto-open]'));
+        self::assertCount(1, $crawler->filter('dialog#client-actions-drawer .client-link-flash button[data-copy-link]'));
+        self::assertCount(1, $crawler->filter('dialog#client-actions-drawer .client-link-flash input[readonly]'));
         self::assertStringContainsString('no-store', (string) $browser->getResponse()->headers->get('Cache-Control'));
         $closeButton = $crawler->filter('.client-link-flash > button.btn-close');
         self::assertCount(1, $closeButton);

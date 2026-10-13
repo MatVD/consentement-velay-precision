@@ -49,6 +49,21 @@ final class AdminResponsiveCssTest extends TestCase
         }
     }
 
+    public function testClientDetailDrawerFitsMobileAndHasNativeModalBehaviour(): void
+    {
+        $css = $this->stylesheet();
+        $js = file_get_contents(dirname(__DIR__).'/public/assets/client-actions-drawer.js');
+
+        self::assertIsString($js);
+        self::assertStringContainsString('dialog.client-actions-drawer[open]', $css);
+        self::assertStringContainsString('width: min(35rem, 100vw);', $css);
+        self::assertStringContainsString('width: 100vw;', $css);
+        self::assertStringContainsString('.content-header:has(.client-actions-trigger)', $css);
+        self::assertStringContainsString('drawer.showModal()', $js);
+        self::assertStringContainsString('drawer.close()', $js);
+        self::assertStringContainsString('data-client-actions-auto-open', $js);
+    }
+
     public function testResponsiveFollowUpTablesAndNarrowHeaderAreCovered(): void
     {
         $css = $this->stylesheet();
