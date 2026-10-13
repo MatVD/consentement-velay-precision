@@ -218,4 +218,17 @@ docker compose -f compose.yaml -f compose.dev.yaml exec -T app php bin/console d
 
 **Statut :** implémentation technique livrée sur `main`, **validation juridique et opérationnelle incomplète**. Arrêt après phase 3 dans l'attente de l'avis utilisateur. Les phases 4 et 5 ne sont pas démarrées.
 
-**Complément du 12 octobre 2026 :** fin de contrat saisie manuellement, archive nominative 1 an, archive anonymisée réservée aux administrateurs 2 ans, puis suppression : décisions métier enregistrées dans `docs/CYCLE_VIE_CLIENTS.md`. La clôture manuelle et l'historique général sont implémentés et testés sur `main`. L'anonymisation et la suppression restent **désactivées** jusqu'à clarification des informations conservées et validation des obligations légales.
+## Complément phase 3 — Option A (13 octobre 2026)
+
+- Décision retenue : archive nominative jusqu'à +1 an après la fin contractuelle saisie, puis **destruction de toutes les données individuelles** et maintien provisoire de **statistiques agrégées uniquement** jusqu'à +3 ans.
+- Nouvelle migration `Version20261013090000` : `retention_aggregate`, `evidence_purge_queue` et regroupement des événements de l'historique par type et mois, sans fiche client ni horodatage individuel.
+- Commande `app:retention:process` : **simulation seule par défaut**, activation impossible sans variable serveur et deux confirmations ; aucune planification destructive configurée.
+- Suppressions SQL atomiques des clients, décisions, invitations, journaux et métadonnées PDF ; effacement physique des preuves après commit, avec file de reprise en cas d'échec.
+- Compteurs réservés à `ROLE_ADMIN` : seuil de confidentialité provisoire de 5, effectifs 1 à 4 non conservés, granularité mensuelle ; historique général visible à tous les profils habilités sans identifiants.
+- Gestion des cas anciens (+3 ans déjà dépassés) sans relancer artificiellement une période de conservation statistique.
+- Tests PostgreSQL fictifs incluant prévention d'une purge avant échéance, rejet des chemins PDF non autorisés, file de reprise, seuil d'agrégation, effacement après échéance et rôles.
+- La migration a été appliquée sur la base de développement après sauvegarde interne. **Aucune donnée client existante n'a été purgée**.
+
+**Points à approuver avant activation** : fondement juridique des durées de conservation des preuves, seuil de cinq clients, échéance mensuelle des statistiques (écart maximal d'environ un mois), rotation des sauvegardes contenant encore des données personnelles, procédure de supervision des suppressions physiques et restauration chiffrée.
+
+**Complément du 12 octobre 2026 :** fin de contrat saisie manuellement, archive nominative 1 an, archive anonymisée réservée aux administrateurs 2 ans, puis suppression : décisions métier enregistrées dans `docs/CYCLE_VIE_CLIENTS.md`. La clôture manuelle et l'historique général sont implémentés et testés sur `main`. L'option A (statistiques agrégées sans dossier pseudonymisé) a été retenue le 13 octobre 2026. Le traitement de suppression irréversible et les statistiques sont maintenant **implémentés mais désactivés par défaut**, soumis à confirmations explicites, validation juridique et test d'exploitation. Aucun cron destructif n'est activé. Voir `docs/CYCLE_VIE_CLIENTS.md`.

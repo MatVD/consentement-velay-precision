@@ -64,6 +64,12 @@ Il crée une base de recette aléatoire, un seul PDF fictif, la sauvegarde chiff
 - Le **test intégral `selftest` n'a pas pu être exécuté via le pont local Hermes** : sa sandbox refuse à un processus Docker Compose lancé depuis Python la lecture de `.env`. Les appels Docker directs et les tests PHP sont passés. Il reste donc à effectuer `selftest` depuis un terminal opérateur autorisé, puis une restauration de préproduction, avant de qualifier la procédure de pleinement validée.
 - Aucun planificateur, stockage hors site, secret d'exploitation ni test sur des données réelles n'a été configuré.
 
+## Conservation et purges de la base (option A, 13 octobre 2026)
+
+La suppression programmée d'un dossier après un an d'archive normale **n'efface pas rétroactivement les copies de PostgreSQL ou du volume PDF déjà créées**. Il faut donc adopter une durée de conservation des sauvegardes **compatible avec le calendrier de suppression**, y compris les copies hors site et les environnements de recette. Si une restauration réintroduit d'anciens clients/justificatifs, la procédure de reprise doit réappliquer les suppressions autorisées avant de rendre l'application accessible.
+
+Le mécanisme `evidence_purge_queue` peut également contenir des chemins de fichiers dont la suppression physique n'est pas terminée : **alerte et intervention requises en cas de file non vide**. Ne pas interpréter la seule suppression SQL comme une disparition immédiate de toutes les copies. La politique de rotation des sauvegardes et le calendrier de purge demandent encore validation par le responsable de traitement.
+
 ## Limites explicites
 
 - **Pas de sauvegarde cohérente pendant des écritures simultanées** : ne pas supprimer `--confirm-maintenance` pour la production.
